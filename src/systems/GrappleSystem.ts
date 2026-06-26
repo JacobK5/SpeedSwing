@@ -1,11 +1,14 @@
 import Phaser from 'phaser';
 import type { GameConfig } from '../config/types';
 import type { Player } from '../entities/Player';
+import type { InputManager } from '../core/InputManager';
 import type { SurfaceInfo } from './LevelBuilder';
 import { GrappleNode } from '../entities/GrappleNode';
 import { Projectile } from '../entities/Projectile';
+import { Rope } from '../physics/Rope';
 import { isTerrainLabel } from '../physics/CollisionCategories';
 import { hexToInt } from '../core/color';
+import { findNearestNode, computeRopeLength, clamp } from './grappleMath';
 
 /**
  * Owns grapple-node projectiles and the permanent nodes they create.
@@ -19,6 +22,9 @@ export class GrappleSystem {
   private readonly nodes: GrappleNode[] = [];
   private readonly projectiles: Projectile[] = [];
   private readonly projectileByBodyId = new Map<number, Projectile>();
+
+  private rope: Rope | null = null;
+  private attachedNode: GrappleNode | null = null;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -62,7 +68,7 @@ export class GrappleSystem {
     return node;
   }
 
-  update(): void {
+  update(input: InputManager, deltaMs: number): void {
     const now = this.scene.time.now;
     const lifetimeMs = this.config.grapple.projectileLifetime * 1000;
 
@@ -73,6 +79,73 @@ export class GrappleSystem {
       }
       projectile.sync();
     }
+
+    if (this.rope) {
+      const g = this.config.grapple;
+      this.rope.length = computeRopeLength(
+        this.rope.length,
+        input.isDown('ropeRetract'),
+        input.isDown('ropeExtend'),
+        g.retractSpeed,
+        g.extendSpeed,
+        deltaMs / 1000,
+        g.minLength,
+        g.maxLength,
+      );
+    }
+  }
+
+  // --- Rope attachment ---
+
+  /** Toggle the rope: release if attached, else attach to the nearest valid node near the cursor. */
+  attachOrRelease(cursorX: number, cursorY: number): void {
+    if (this.rope) {
+      this.release();
+      return;
+    }
+    const g = this.config.grapple;
+    const node = findNearestNode(
+      this.nodes,
+      { x: cursorX, y: cursorY },
+      this.player.position,
+      g.attachRadius,
+      g.maxAttachDistance,
+    );
+    if (node) {
+      this.attach(node);
+    }
+  }
+
+  release(): void {
+    if (!this.rope) {
+      return;
+    }
+    this.rope.destroy();
+    this.rope = null;
+    this.attachedNode = null;
+  }
+
+  isAttached(): boolean {
+    return this.rope !== null;
+  }
+
+  /** World position of the current rope anchor, or null when detached (debug viz). */
+  getActiveAnchor(): { x: number; y: number } | null {
+    return this.attachedNode ? { x: this.attachedNode.x, y: this.attachedNode.y } : null;
+  }
+
+  getRopeLength(): number | null {
+    return this.rope ? this.rope.length : null;
+  }
+
+  private attach(node: GrappleNode): void {
+    const g = this.config.grapple;
+    const from = this.player.position;
+    // Start at the current player-to-node distance so attaching never yanks the
+    // player; clamp into the configured rope-length range.
+    const length = clamp(Math.hypot(node.x - from.x, node.y - from.y), g.minLength, g.maxLength);
+    this.rope = new Rope(this.scene, this.player.body, node.x, node.y, length, g.stiffness, g.damping);
+    this.attachedNode = node;
   }
 
   private handleCollision(event: Phaser.Physics.Matter.Events.CollisionStartEvent): void {

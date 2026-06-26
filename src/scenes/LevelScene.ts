@@ -10,6 +10,7 @@ import { CollisionSystem } from '../systems/CollisionSystem';
 import { MovementSystem } from '../systems/MovementSystem';
 import { CameraSystem } from '../systems/CameraSystem';
 import { GrappleSystem } from '../systems/GrappleSystem';
+import { DebugOverlay } from '../systems/DebugOverlay';
 import { buildLevel, type BuiltLevel } from '../systems/LevelBuilder';
 
 /**
@@ -26,6 +27,7 @@ export class LevelScene extends Phaser.Scene {
   private collision!: CollisionSystem;
   private movement!: MovementSystem;
   private grapple!: GrappleSystem;
+  private debug!: DebugOverlay;
 
   constructor() {
     super(SceneKeys.Level);
@@ -47,7 +49,13 @@ export class LevelScene extends Phaser.Scene {
     this.collision = new CollisionSystem(this);
     this.movement = new MovementSystem();
     this.grapple = new GrappleSystem(this, this.player, this.config, this.built.surfaceByBodyId);
+    this.debug = new DebugOverlay(this, this.config);
     new CameraSystem(this, this.player, this.config, this.built.bounds);
+
+    if (this.config.debug.matterDebug) {
+      this.matter.world.createDebugGraphic();
+      this.matter.world.drawDebug = true;
+    }
 
     this.input.mouse?.disableContextMenu();
     this.input.on('pointerdown', this.handlePointerDown, this);
@@ -61,26 +69,47 @@ export class LevelScene extends Phaser.Scene {
       return;
     }
 
+    if (this.inputManager.justPressed('debugToggle')) {
+      this.debug.toggle();
+    }
+
     const grounded = this.collision.isGrounded(this.player);
     this.movement.update(this.player, this.inputManager, this.config, delta, grounded);
     this.player.sync();
-    this.grapple.update();
+    this.grapple.update(this.inputManager, delta);
+
+    this.debug.update({
+      player: this.player,
+      nodes: this.grapple.getNodes(),
+      ropeAnchor: this.grapple.getActiveAnchor(),
+      ropeLength: this.grapple.getRopeLength(),
+      cursor: this.inputManager.pointerWorld(),
+      grounded,
+      fps: this.game.loop.actualFps,
+    });
   }
 
   private handlePointerDown(pointer: Phaser.Input.Pointer): void {
     const world = pointer.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
     if (pointer.leftButtonDown()) {
       this.grapple.fire(world.x, world.y);
+    } else if (pointer.rightButtonDown()) {
+      this.grapple.attachOrRelease(world.x, world.y);
     }
   }
 
   private drawControlsHint(): void {
     this.add
-      .text(12, 12, 'A / D  move    SPACE  jump    LMB  place node    R  restart', {
-        fontFamily: 'monospace',
-        fontSize: '14px',
-        color: '#8a93a6',
-      })
+      .text(
+        12,
+        12,
+        'A/D move   SPACE jump   LMB place node   RMB grapple   W/S rope   R restart   ` debug',
+        {
+          fontFamily: 'monospace',
+          fontSize: '14px',
+          color: '#8a93a6',
+        },
+      )
       .setScrollFactor(0)
       .setDepth(1000);
   }
