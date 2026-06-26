@@ -31,3 +31,8 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 export const game = new Phaser.Game(config);
+
+// Expose the running game during development for debugging and automated checks.
+if (import.meta.env.DEV) {
+  (globalThis as typeof globalThis & { __GAME__?: Phaser.Game }).__GAME__ = game;
+}
