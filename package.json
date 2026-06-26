@@ -1,0 +1,29 @@
+{
+  "name": "browser-grappling-game",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A movement-first browser speedrunning game built around grappling, momentum, and player creativity.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/node": "^20.11.0",
+    "eslint": "^9.39.4",
+    "globals": "^15.0.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.62.0",
+    "vite": "^5.4.21",
+    "vitest": "^2.1.9"
+  }
+}
