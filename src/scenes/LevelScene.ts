@@ -9,6 +9,7 @@ import { InputManager } from '../core/InputManager';
 import { CollisionSystem } from '../systems/CollisionSystem';
 import { MovementSystem } from '../systems/MovementSystem';
 import { CameraSystem } from '../systems/CameraSystem';
+import { GrappleSystem } from '../systems/GrappleSystem';
 import { buildLevel, type BuiltLevel } from '../systems/LevelBuilder';
 
 /**
@@ -24,6 +25,7 @@ export class LevelScene extends Phaser.Scene {
   private inputManager!: InputManager;
   private collision!: CollisionSystem;
   private movement!: MovementSystem;
+  private grapple!: GrappleSystem;
 
   constructor() {
     super(SceneKeys.Level);
@@ -44,7 +46,11 @@ export class LevelScene extends Phaser.Scene {
     this.inputManager = new InputManager(this);
     this.collision = new CollisionSystem(this);
     this.movement = new MovementSystem();
+    this.grapple = new GrappleSystem(this, this.player, this.config, this.built.surfaceByBodyId);
     new CameraSystem(this, this.player, this.config, this.built.bounds);
+
+    this.input.mouse?.disableContextMenu();
+    this.input.on('pointerdown', this.handlePointerDown, this);
 
     this.drawControlsHint();
   }
@@ -58,11 +64,19 @@ export class LevelScene extends Phaser.Scene {
     const grounded = this.collision.isGrounded(this.player);
     this.movement.update(this.player, this.inputManager, this.config, delta, grounded);
     this.player.sync();
+    this.grapple.update();
+  }
+
+  private handlePointerDown(pointer: Phaser.Input.Pointer): void {
+    const world = pointer.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
+    if (pointer.leftButtonDown()) {
+      this.grapple.fire(world.x, world.y);
+    }
   }
 
   private drawControlsHint(): void {
     this.add
-      .text(12, 12, 'A / D  move      SPACE  jump      R  restart', {
+      .text(12, 12, 'A / D  move    SPACE  jump    LMB  place node    R  restart', {
         fontFamily: 'monospace',
         fontSize: '14px',
         color: '#8a93a6',

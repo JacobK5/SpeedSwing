@@ -6,7 +6,14 @@ import Phaser from 'phaser';
 // key codes and gives us a single place to make bindings configurable later
 // (see docs/02-v0.1-technical-spec.md "Controls").
 
-export type InputAction = 'left' | 'right' | 'jump' | 'ropeRetract' | 'ropeExtend' | 'restart';
+export type InputAction =
+  | 'left'
+  | 'right'
+  | 'jump'
+  | 'ropeRetract'
+  | 'ropeExtend'
+  | 'restart'
+  | 'debugToggle';
 
 export class InputManager {
   private readonly keys: Record<InputAction, Phaser.Input.Keyboard.Key>;
@@ -27,10 +34,11 @@ export class InputManager {
       ropeRetract: keyboard.addKey(KC.W),
       ropeExtend: keyboard.addKey(KC.S),
       restart: keyboard.addKey(KC.R),
+      debugToggle: keyboard.addKey(KC.BACKTICK),
     };
 
     // Stop the browser from scrolling/space-activating while playing.
-    keyboard.addCapture([KC.SPACE, KC.W, KC.A, KC.S, KC.D]);
+    keyboard.addCapture([KC.SPACE, KC.W, KC.A, KC.S, KC.D, KC.BACKTICK]);
   }
 
   /** Whether the action's key is currently held. */
@@ -41,12 +49,6 @@ export class InputManager {
   /** True only on the frame the action's key transitions to pressed. */
   justPressed(action: InputAction): boolean {
     return Phaser.Input.Keyboard.JustDown(this.keys[action]);
-  }
-
-  /** Whether the given mouse button is currently held (0 = left, 2 = right). */
-  isPointerDown(button: 0 | 2): boolean {
-    const p = this.scene.input.activePointer;
-    return button === 0 ? p.leftButtonDown() : p.rightButtonDown();
   }
 
   /** Current pointer position in world space (accounts for camera scroll/zoom). */
