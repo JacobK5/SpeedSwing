@@ -1,0 +1,9 @@
+{
+  "startEnabled": false,
+  "drawRope": true,
+  "drawNodes": true,
+  "drawVelocity": true,
+  "drawAttachRadius": true,
+  "showOverlay": true,
+  "matterDebug": false
+}

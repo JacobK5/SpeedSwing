@@ -1,0 +1,151 @@
+import type { GameConfig, SurfaceDef } from './types';
+import {
+  DEFAULT_PHYSICS,
+  DEFAULT_MOVEMENT,
+  DEFAULT_GRAPPLE,
+  DEFAULT_CAMERA,
+  DEFAULT_DEBUG,
+  DEFAULT_SURFACES,
+} from './defaults';
+
+// Pure configuration resolution.
+//
+// `resolveConfig` takes raw (untrusted) JSON-shaped input and merges it over the
+// documented defaults, validating types along the way. It never throws: invalid
+// or missing values fall back to defaults and are reported as warnings. Keeping
+// this pure (no Phaser, no I/O) makes it trivial to unit test.
+
+type Primitive = number | boolean;
+
+/** Raw, unvalidated config input — typically parsed JSON. */
+export interface RawConfigInput {
+  physics?: unknown;
+  movement?: unknown;
+  grapple?: unknown;
+  camera?: unknown;
+  debug?: unknown;
+  surfaces?: unknown;
+}
+
+export interface ResolveResult {
+  config: GameConfig;
+  /** Human-readable validation notes (unknown keys, type mismatches, fallbacks). */
+  warnings: string[];
+}
+
+/**
+ * Merge a single flat category of primitive values over its defaults.
+ * Unknown keys and type mismatches are reported but never fatal.
+ */
+function resolveCategory<T extends object>(
+  defaults: T,
+  raw: unknown,
+  categoryName: string,
+  warnings: string[],
+): T {
+  const result = { ...defaults } as T;
+
+  // Record views let us iterate/mutate the flat primitive fields generically
+  // without burdening every config interface with an index signature.
+  const defs = defaults as unknown as Record<string, Primitive>;
+  const out = result as unknown as Record<string, Primitive>;
+
+  if (raw === undefined) {
+    return result;
+  }
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+    warnings.push(`config: "${categoryName}" is not an object; using all defaults.`);
+    return result;
+  }
+
+  const rawObj = raw as Record<string, unknown>;
+
+  for (const key of Object.keys(defs)) {
+    const defVal = defs[key];
+    const rawVal = rawObj[key];
+
+    if (rawVal === undefined) {
+      continue; // Missing value: silently keep the default baseline.
+    }
+
+    const typesMatch = typeof rawVal === typeof defVal;
+    const numberIsFinite = typeof rawVal !== 'number' || Number.isFinite(rawVal);
+
+    if (typesMatch && numberIsFinite) {
+      out[key] = rawVal as Primitive;
+    } else {
+      warnings.push(
+        `config: "${categoryName}.${key}" expected ${typeof defVal}, ` +
+          `got ${typeof rawVal}; using default (${String(defVal)}).`,
+      );
+    }
+  }
+
+  for (const key of Object.keys(rawObj)) {
+    if (!(key in defs)) {
+      warnings.push(`config: unknown key "${categoryName}.${key}" ignored.`);
+    }
+  }
+
+  return result;
+}
+
+/** Merge the surface table, validating each known surface's fields. */
+function resolveSurfaces(raw: unknown, warnings: string[]): Record<string, SurfaceDef> {
+  const result: Record<string, SurfaceDef> = {};
+  for (const [name, def] of Object.entries(DEFAULT_SURFACES)) {
+    result[name] = { ...def };
+  }
+
+  if (raw === undefined) {
+    return result;
+  }
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+    warnings.push('config: "surfaces" is not an object; using all defaults.');
+    return result;
+  }
+
+  const rawObj = raw as Record<string, unknown>;
+  for (const [name, rawDef] of Object.entries(rawObj)) {
+    if (!(name in result)) {
+      warnings.push(`config: unknown surface type "${name}" ignored.`);
+      continue;
+    }
+    if (rawDef === null || typeof rawDef !== 'object' || Array.isArray(rawDef)) {
+      warnings.push(`config: surface "${name}" is not an object; using default.`);
+      continue;
+    }
+
+    const base = result[name];
+    const rawSurface = rawDef as Record<string, unknown>;
+    result[name] = {
+      color: typeof rawSurface.color === 'string' ? rawSurface.color : base.color,
+      collidable: typeof rawSurface.collidable === 'boolean' ? rawSurface.collidable : base.collidable,
+      canPlaceNode:
+        typeof rawSurface.canPlaceNode === 'boolean' ? rawSurface.canPlaceNode : base.canPlaceNode,
+      destructible:
+        typeof rawSurface.destructible === 'boolean' ? rawSurface.destructible : base.destructible,
+    };
+  }
+
+  return result;
+}
+
+/**
+ * Resolve raw config input into a fully-populated, type-safe {@link GameConfig}.
+ * Always succeeds; problems are surfaced via the returned `warnings` array.
+ */
+export function resolveConfig(raw: RawConfigInput = {}): ResolveResult {
+  const warnings: string[] = [];
+
+  const config: GameConfig = {
+    physics: resolveCategory(DEFAULT_PHYSICS, raw.physics, 'physics', warnings),
+    movement: resolveCategory(DEFAULT_MOVEMENT, raw.movement, 'movement', warnings),
+    grapple: resolveCategory(DEFAULT_GRAPPLE, raw.grapple, 'grapple', warnings),
+    camera: resolveCategory(DEFAULT_CAMERA, raw.camera, 'camera', warnings),
+    debug: resolveCategory(DEFAULT_DEBUG, raw.debug, 'debug', warnings),
+    surfaces: resolveSurfaces(raw.surfaces, warnings),
+  };
+
+  return { config, warnings };
+}

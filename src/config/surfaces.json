@@ -1,0 +1,6 @@
+{
+  "standard": { "color": "#6b7280", "collidable": true, "canPlaceNode": true, "destructible": false },
+  "no-node": { "color": "#7c4a4a", "collidable": true, "canPlaceNode": false, "destructible": false },
+  "destructible": { "color": "#8a6d3b", "collidable": true, "canPlaceNode": true, "destructible": true },
+  "killzone": { "color": "#3a1f1f", "collidable": false, "canPlaceNode": false, "destructible": false }
+}

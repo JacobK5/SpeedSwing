@@ -1,0 +1,11 @@
+{
+  "maxRunSpeed": 6.5,
+  "groundAcceleration": 45,
+  "airAcceleration": 25,
+  "groundFriction": 50,
+  "airDrag": 0,
+  "jumpVelocity": 11,
+  "maxFallSpeed": 20,
+  "coyoteTime": 0.1,
+  "jumpBufferTime": 0.12
+}

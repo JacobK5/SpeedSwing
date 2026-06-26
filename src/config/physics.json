@@ -1,0 +1,11 @@
+{
+  "gravityX": 0,
+  "gravityY": 1,
+  "gravityScale": 0.001,
+  "playerWidth": 28,
+  "playerHeight": 44,
+  "playerFriction": 0,
+  "playerFrictionStatic": 0,
+  "playerFrictionAir": 0,
+  "playerRestitution": 0
+}
