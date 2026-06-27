@@ -7,19 +7,32 @@ export interface Point {
 }
 
 /**
- * Select the grapple node nearest the cursor. There is no radius or distance
- * gate: grabbing always targets the closest node to the cursor, which playtested
- * as far smoother than requiring the cursor to be within a forgiveness radius.
- * Returns null only when there are no nodes.
+ * Select the grapple node to attach to: the node nearest the cursor among those
+ * within `maxReach` pixels of the player.
+ *
+ * Cursor distance is deliberately NOT gated (no forgiveness radius — that
+ * playtested worse): aiming roughly toward a cluster always grabs the closest
+ * node to the cursor. But a node physically out of the player's reach is never
+ * targeted, which is what stops far/offscreen nodes from yanking the player.
+ * Returns null when nothing is in reach.
  */
-export function findNearestNode<T extends Point>(nodes: readonly T[], cursor: Point): T | null {
+export function findAttachTarget<T extends Point>(
+  nodes: readonly T[],
+  cursor: Point,
+  player: Point,
+  maxReach: number,
+): T | null {
   let best: T | null = null;
-  let bestDist = Infinity;
+  let bestCursorDist = Infinity;
 
   for (const node of nodes) {
-    const dist = Math.hypot(node.x - cursor.x, node.y - cursor.y);
-    if (dist < bestDist) {
-      bestDist = dist;
+    const playerDist = Math.hypot(node.x - player.x, node.y - player.y);
+    if (playerDist > maxReach) {
+      continue;
+    }
+    const cursorDist = Math.hypot(node.x - cursor.x, node.y - cursor.y);
+    if (cursorDist < bestCursorDist) {
+      bestCursorDist = cursorDist;
       best = node;
     }
   }

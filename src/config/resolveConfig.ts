@@ -125,6 +125,13 @@ function enforceRelationships(config: GameConfig, warnings: string[]): void {
     );
     g.minLength = g.maxLength;
   }
+  if (g.maxAttachDistance > g.maxLength) {
+    warnings.push(
+      `config: grapple.maxAttachDistance (${g.maxAttachDistance}) exceeds grapple.maxLength ` +
+        `(${g.maxLength}); clamping maxAttachDistance to maxLength so attaching never yanks.`,
+    );
+    g.maxAttachDistance = g.maxLength;
+  }
 }
 
 /** Merge the surface table, validating each known surface's fields. */

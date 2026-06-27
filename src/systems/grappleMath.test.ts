@@ -1,26 +1,38 @@
 import { describe, it, expect } from 'vitest';
-import { findNearestNode, computeRopeLength, clamp, resolveImpactPoint } from './grappleMath';
+import { findAttachTarget, computeRopeLength, clamp, resolveImpactPoint } from './grappleMath';
 
-describe('findNearestNode', () => {
+describe('findAttachTarget', () => {
+  const player = { x: 0, y: 0 };
   const nodes = [
-    { x: 100, y: 0, id: 'a' },
-    { x: 120, y: 0, id: 'b' },
-    { x: 400, y: 0, id: 'c' },
+    { x: 100, y: 0, id: 'near' },
+    { x: 120, y: 0, id: 'near2' },
+    { x: 800, y: 0, id: 'far' },
   ];
 
-  it('returns the node nearest the cursor', () => {
-    const node = findNearestNode(nodes, { x: 118, y: 0 });
-    expect(node?.id).toBe('b');
+  it('targets the node nearest the cursor among those within reach', () => {
+    const node = findAttachTarget(nodes, { x: 118, y: 0 }, player, 1000);
+    expect(node?.id).toBe('near2');
   });
 
-  it('targets the nearest node no matter how far the cursor is (no radius gate)', () => {
-    // Cursor is far from every node; it still selects the closest one (c).
-    const node = findNearestNode(nodes, { x: 5000, y: 0 });
-    expect(node?.id).toBe('c');
+  it('does not gate on cursor distance (aiming roughly still grabs the closest in-reach node)', () => {
+    // Cursor far to the right; with all three nodes in reach, the one closest to
+    // the cursor ('far') is selected — there is no cursor forgiveness radius.
+    const node = findAttachTarget(nodes, { x: 5000, y: 0 }, player, 1000);
+    expect(node?.id).toBe('far');
   });
 
-  it('returns null only for an empty node list', () => {
-    expect(findNearestNode([], { x: 0, y: 0 })).toBeNull();
+  it('ignores a node out of the player reach even when the cursor sits on it', () => {
+    // Cursor on the far node (800 from player) but reach is 300; pick in-reach.
+    const node = findAttachTarget(nodes, { x: 800, y: 0 }, player, 300);
+    expect(node?.id).toBe('near2');
+  });
+
+  it('returns null when every node is out of reach', () => {
+    expect(findAttachTarget(nodes, { x: 0, y: 0 }, player, 50)).toBeNull();
+  });
+
+  it('returns null for an empty node list', () => {
+    expect(findAttachTarget([], { x: 0, y: 0 }, player, 1000)).toBeNull();
   });
 });
 

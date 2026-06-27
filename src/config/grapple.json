@@ -1,6 +1,7 @@
 {
   "minLength": 40,
   "maxLength": 600,
+  "maxAttachDistance": 600,
   "retractSpeed": 220,
   "extendSpeed": 260,
   "stiffness": 0.9,

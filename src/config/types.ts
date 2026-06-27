@@ -50,12 +50,19 @@ export interface MovementConfig {
   jumpBufferTime: number;
 }
 
-/** Grapple node projectile, rope simulation and attach forgiveness. */
+/** Grapple node projectile, rope simulation and attach reach. */
 export interface GrappleConfig {
   /** Shortest the rope can be retracted to (pixels). */
   minLength: number;
   /** Longest the rope can be extended to (pixels). */
   maxLength: number;
+  /**
+   * Maximum player-to-node distance at which a grab can attach (pixels).
+   * Should be <= maxLength (validation clamps it); the effective reach is always
+   * capped at maxLength so attaching never creates a rope shorter than the
+   * current distance (which would yank the player toward a far node).
+   */
+  maxAttachDistance: number;
   /** Rope retraction speed while holding W (pixels/second). */
   retractSpeed: number;
   /** Rope extension speed while holding S (pixels/second). */

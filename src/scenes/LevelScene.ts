@@ -55,13 +55,10 @@ export class LevelScene extends Phaser.Scene {
     this.debug = new DebugOverlay(this, this.config);
     this.camera = new CameraSystem(this, this.player, this.config, this.built.bounds);
 
-    if (this.config.debug.matterDebug) {
-      this.matter.world.createDebugGraphic();
-      this.matter.world.drawDebug = true;
-    }
+    this.applyMatterDebug();
 
     // Developer tuning panel (dev builds only). Edits mutate the live config;
-    // gravity/camera are re-applied via applyLiveConfig.
+    // gravity/camera/matter-debug are re-applied via applyLiveConfig.
     if (import.meta.env.DEV) {
       this.tuning = new TuningPanel(this.config, { onChange: () => this.applyLiveConfig() });
       this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -82,6 +79,21 @@ export class LevelScene extends Phaser.Scene {
     const p = this.config.physics;
     this.matter.world.setGravity(p.gravityX, p.gravityY, p.gravityScale);
     this.camera.applyConfig();
+    this.applyMatterDebug();
+  }
+
+  /** Toggle Matter's body debug rendering to match config.debug.matterDebug (live). */
+  private applyMatterDebug(): void {
+    const world = this.matter.world;
+    if (this.config.debug.matterDebug) {
+      if (!world.debugGraphic) {
+        world.createDebugGraphic();
+      }
+      world.drawDebug = true;
+    } else {
+      world.drawDebug = false;
+      world.debugGraphic?.clear();
+    }
   }
 
   update(_time: number, delta: number): void {
@@ -110,12 +122,14 @@ export class LevelScene extends Phaser.Scene {
     this.player.sync();
     this.grapple.update(this.inputManager, delta);
 
+    const cursor = this.inputManager.pointerWorld();
     this.debug.update({
       player: this.player,
       nodes: this.grapple.getNodes(),
       ropeAnchor: this.grapple.getActiveAnchor(),
       ropeLength: this.grapple.getRopeLength(),
-      cursor: this.inputManager.pointerWorld(),
+      cursor,
+      attachTarget: this.grapple.getAttachTarget(cursor.x, cursor.y),
       grounded,
       fps: this.game.loop.actualFps,
     });

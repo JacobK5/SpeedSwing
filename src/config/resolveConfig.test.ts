@@ -100,6 +100,23 @@ describe('resolveConfig range validation', () => {
     expect(warnings.some((w) => w.includes('minLength') && w.includes('maxLength'))).toBe(true);
   });
 
+  it('clamps a negative maxAttachDistance to 0', () => {
+    const { config } = resolveConfig({ grapple: { maxAttachDistance: -100 } });
+    expect(config.grapple.maxAttachDistance).toBe(0);
+  });
+
+  it('clamps maxAttachDistance above maxLength down to maxLength and warns', () => {
+    const { config, warnings } = resolveConfig({ grapple: { maxAttachDistance: 5000, maxLength: 600 } });
+    expect(config.grapple.maxAttachDistance).toBe(600);
+    expect(warnings.some((w) => w.includes('maxAttachDistance') && w.includes('maxLength'))).toBe(true);
+  });
+
+  it('leaves a maxAttachDistance at/below maxLength untouched', () => {
+    const { config, warnings } = resolveConfig({ grapple: { maxAttachDistance: 400, maxLength: 600 } });
+    expect(config.grapple.maxAttachDistance).toBe(400);
+    expect(warnings.some((w) => w.includes('maxAttachDistance'))).toBe(false);
+  });
+
   it('leaves in-range defaults untouched with no warnings', () => {
     const { warnings } = resolveConfig({});
     expect(warnings).toHaveLength(0);

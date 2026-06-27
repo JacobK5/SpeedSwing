@@ -152,7 +152,7 @@ export class TuningPanel {
 
     if (category === 'physics') {
       const note = document.createElement('div');
-      note.textContent = 'body size/friction/chamfer apply on restart (R)';
+      note.textContent = 'gravity is live; player body (size/friction/chamfer/restitution) applies on restart (R)';
       Object.assign(note.style, { color: '#5b6477', fontStyle: 'italic' } satisfies Partial<CSSStyleDeclaration>);
       section.appendChild(note);
     }

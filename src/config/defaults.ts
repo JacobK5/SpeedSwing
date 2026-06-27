@@ -45,6 +45,7 @@ export const DEFAULT_MOVEMENT: MovementConfig = {
 export const DEFAULT_GRAPPLE: GrappleConfig = {
   minLength: 40,
   maxLength: 600,
+  maxAttachDistance: 600, // == maxLength: reach as far as the rope, never further
   retractSpeed: 220,
   extendSpeed: 260,
   stiffness: 0.9,

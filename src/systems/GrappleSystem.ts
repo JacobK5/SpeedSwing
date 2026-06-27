@@ -8,7 +8,7 @@ import { Projectile } from '../entities/Projectile';
 import { Rope } from '../physics/Rope';
 import { isTerrainLabel } from '../physics/CollisionCategories';
 import { hexToInt } from '../core/color';
-import { findNearestNode, computeRopeLength, clamp, resolveImpactPoint } from './grappleMath';
+import { findAttachTarget, computeRopeLength, clamp, resolveImpactPoint } from './grappleMath';
 
 /**
  * Owns grapple-node projectiles and the permanent nodes they create.
@@ -98,12 +98,26 @@ export class GrappleSystem {
   // --- Rope attachment ---
 
   /**
-   * Attach to the node nearest the cursor (hold-to-grapple: called on right-mouse
-   * press). There is no radius/distance gate — grabbing always targets the closest
-   * node, which playtested as much smoother. Any existing rope is replaced.
+   * The node a grab would attach to from the given cursor position, or null if
+   * nothing is in reach. Shared by attachToNearest and the debug preview so they
+   * always agree.
+   */
+  getAttachTarget(cursorX: number, cursorY: number): GrappleNode | null {
+    const g = this.config.grapple;
+    // Cap the reach at the rope's max length: attaching to a node farther than
+    // maxLength would force a rope shorter than the current distance and yank the
+    // player. Validation also enforces maxAttachDistance <= maxLength, so this is
+    // a belt-and-braces guard for live tuning.
+    const reach = Math.min(g.maxAttachDistance, g.maxLength);
+    return findAttachTarget(this.nodes, { x: cursorX, y: cursorY }, this.player.position, reach);
+  }
+
+  /**
+   * Attach to the node nearest the cursor that is within reach (hold-to-grapple:
+   * called on right-mouse press). Any existing rope is replaced.
    */
   attachToNearest(cursorX: number, cursorY: number): void {
-    const target = findNearestNode(this.nodes, { x: cursorX, y: cursorY });
+    const target = this.getAttachTarget(cursorX, cursorY);
     if (!target) {
       return;
     }
@@ -138,9 +152,11 @@ export class GrappleSystem {
   private attach(node: GrappleNode): void {
     const g = this.config.grapple;
     const from = this.player.position;
-    // Start at the current player-to-node distance so attaching never yanks the
-    // player; clamp into the configured rope-length range.
-    const length = clamp(Math.hypot(node.x - from.x, node.y - from.y), g.minLength, g.maxLength);
+    const distance = Math.hypot(node.x - from.x, node.y - from.y);
+    // Start at the current distance so attaching never yanks. Targets are always
+    // within reach (<= maxLength), so the clamp resolves to max(minLength,
+    // distance) and is never shorter than the current distance.
+    const length = clamp(distance, g.minLength, g.maxLength);
     this.rope = new Rope(this.scene, this.player.body, node.x, node.y, length, g.stiffness, g.damping);
     this.attachedNode = node;
   }

@@ -41,6 +41,7 @@ export const RANGES: Record<RangedCategory, CategoryRanges> = {
   grapple: {
     minLength: { min: 0 },
     maxLength: { min: 1 },
+    maxAttachDistance: { min: 0 },
     retractSpeed: { min: 0 },
     extendSpeed: { min: 0 },
     stiffness: { min: 0, max: 1 },

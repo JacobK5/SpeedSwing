@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import type { GameConfig } from '../config/types';
 import type { Player } from '../entities/Player';
 import { hexToInt } from '../core/color';
-import { findNearestNode } from './grappleMath';
 
 /** Everything the overlay needs to render one frame of debug visualisation. */
 export interface DebugContext {
@@ -11,16 +10,21 @@ export interface DebugContext {
   ropeAnchor: { x: number; y: number } | null;
   ropeLength: number | null;
   cursor: { x: number; y: number };
+  /** The node a grab would attach to right now, or null if none is in reach. */
+  attachTarget: { x: number; y: number } | null;
   grounded: boolean;
   fps: number;
 }
 
 /**
  * Toggleable developer visualisation (backtick key). Draws the rope, placed
- * nodes, a line to the node that a grab would target (nearest to the cursor) and
- * the player's velocity vector in world space, plus a fixed text panel of live
- * state — enough to understand grapple and movement behaviour while tuning
- * (docs/04-physics-tuning.md "Debug").
+ * nodes, a preview of the node a grab would attach to (or a "no target" marker
+ * when none is in reach) and the player's velocity vector in world space, plus a
+ * fixed text panel of live state — enough to understand grapple and movement
+ * behaviour while tuning (docs/04-physics-tuning.md "Debug").
+ *
+ * Every flag in config.debug is read each frame, so toggling them in the tuning
+ * panel takes effect immediately (including showOverlay).
  */
 export class DebugOverlay {
   enabled: boolean;
@@ -43,23 +47,26 @@ export class DebugOverlay {
       })
       .setScrollFactor(0)
       .setPadding(6, 4, 6, 4)
-      .setDepth(1001);
-
-    this.applyVisibility();
+      .setDepth(1001)
+      .setVisible(false);
   }
 
   toggle(): void {
     this.enabled = !this.enabled;
-    this.applyVisibility();
   }
 
   update(ctx: DebugContext): void {
     this.gfx.clear();
+
+    const d = this.config.debug;
+    // Text visibility is driven every frame so both the debug toggle and the
+    // showOverlay flag apply live.
+    this.text.setVisible(this.enabled && d.showOverlay);
+
     if (!this.enabled) {
       return;
     }
 
-    const d = this.config.debug;
     const pos = ctx.player.position;
 
     if (d.drawNodes) {
@@ -69,15 +76,8 @@ export class DebugOverlay {
       }
     }
 
-    // The node a grab would target (nearest to the cursor) + a line to it.
     if (d.drawAttachTarget) {
-      const target = findNearestNode(ctx.nodes, ctx.cursor);
-      if (target) {
-        this.gfx.lineStyle(1, hexToInt('#3a6ea5'), 0.7);
-        this.gfx.lineBetween(ctx.cursor.x, ctx.cursor.y, target.x, target.y);
-        this.gfx.lineStyle(2, hexToInt('#9ad1ff'), 0.9);
-        this.gfx.strokeCircle(target.x, target.y, 16);
-      }
+      this.drawAttachPreview(ctx);
     }
 
     if (d.drawRope && ctx.ropeAnchor) {
@@ -107,10 +107,17 @@ export class DebugOverlay {
     }
   }
 
-  private applyVisibility(): void {
-    this.text.setVisible(this.enabled && this.config.debug.showOverlay);
-    if (!this.enabled) {
-      this.gfx.clear();
+  /** Preview the grab target: a line to the valid node, or a red ring when none. */
+  private drawAttachPreview(ctx: DebugContext): void {
+    if (ctx.attachTarget) {
+      this.gfx.lineStyle(1, hexToInt('#3a6ea5'), 0.7);
+      this.gfx.lineBetween(ctx.cursor.x, ctx.cursor.y, ctx.attachTarget.x, ctx.attachTarget.y);
+      this.gfx.lineStyle(2, hexToInt('#9ad1ff'), 0.9);
+      this.gfx.strokeCircle(ctx.attachTarget.x, ctx.attachTarget.y, 16);
+    } else {
+      // No node in reach: a small red ring at the cursor makes that obvious.
+      this.gfx.lineStyle(2, hexToInt('#ff6b6b'), 0.8);
+      this.gfx.strokeCircle(ctx.cursor.x, ctx.cursor.y, 10);
     }
   }
 }
