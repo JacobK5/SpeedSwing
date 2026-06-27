@@ -1,38 +1,45 @@
 import Phaser from 'phaser';
 import type { Player } from '../entities/Player';
 import { isTerrainLabel } from '../physics/CollisionCategories';
+import { terrainCountsAsGround } from './groundCheck';
+
+// How far a terrain top may differ from the feet and still count as ground.
+// Absorbs body penetration and the small pre-landing gap; small enough that
+// vertical wall sides (top edge far above the feet) never qualify.
+const GROUND_CONTACT_TOLERANCE = 6;
 
 /**
  * Answers physics/terrain collision questions for gameplay systems.
  *
- * For Phase 1 its sole job is ground detection. It probes a thin rectangle just
- * below the player's feet and reports whether any terrain overlaps it — robust
- * for axis-aligned platforms and free of per-collision event bookkeeping.
+ * For Phase 1-2 its job is ground detection. It probes a thin rectangle just
+ * below the player's feet and counts a terrain body as ground only when that
+ * body's *top* edge is roughly at the feet — so vertical walls overlapping the
+ * probe are not misread as ground (see groundCheck.ts).
  */
 export class CollisionSystem {
   constructor(private readonly scene: Phaser.Scene) {}
 
   isGrounded(player: Player): boolean {
-    const pos = player.body.position;
+    const body = player.body;
+    const feetY = body.bounds.max.y;
     const halfWidth = player.width / 2;
-    const halfHeight = player.height / 2;
 
     // A flat probe straddling the feet: 2px up into the body, 4px below it.
-    const probeX = pos.x - halfWidth * 0.9;
-    const probeY = pos.y + halfHeight - 2;
+    const probeX = body.position.x - halfWidth * 0.9;
+    const probeY = feetY - 2;
     const probeWidth = halfWidth * 1.8;
     const probeHeight = 6;
 
     const bodies = this.scene.matter.intersectRect(probeX, probeY, probeWidth, probeHeight, false);
 
-    for (const body of bodies) {
+    for (const overlapped of bodies) {
       // intersectRect returns a (body | game object) union; terrain is always a
-      // raw Matter body, so narrow to BodyType to read its label.
-      const matterBody = body as MatterJS.BodyType;
-      if (matterBody === player.body) {
+      // raw Matter body, so narrow to BodyType to read its label/bounds.
+      const matterBody = overlapped as MatterJS.BodyType;
+      if (matterBody === body || !isTerrainLabel(matterBody.label)) {
         continue;
       }
-      if (isTerrainLabel(matterBody.label)) {
+      if (terrainCountsAsGround(feetY, matterBody.bounds.min.y, GROUND_CONTACT_TOLERANCE)) {
         return true;
       }
     }
