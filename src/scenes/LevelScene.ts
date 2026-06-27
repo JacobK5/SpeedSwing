@@ -11,6 +11,7 @@ import { MovementSystem } from '../systems/MovementSystem';
 import { CameraSystem } from '../systems/CameraSystem';
 import { GrappleSystem } from '../systems/GrappleSystem';
 import { DebugOverlay } from '../systems/DebugOverlay';
+import { TuningPanel } from '../systems/TuningPanel';
 import { buildLevel, type BuiltLevel } from '../systems/LevelBuilder';
 
 /**
@@ -27,7 +28,9 @@ export class LevelScene extends Phaser.Scene {
   private collision!: CollisionSystem;
   private movement!: MovementSystem;
   private grapple!: GrappleSystem;
+  private camera!: CameraSystem;
   private debug!: DebugOverlay;
+  private tuning?: TuningPanel;
 
   constructor() {
     super(SceneKeys.Level);
@@ -50,11 +53,21 @@ export class LevelScene extends Phaser.Scene {
     this.movement = new MovementSystem();
     this.grapple = new GrappleSystem(this, this.player, this.config, this.built.surfaceByBodyId);
     this.debug = new DebugOverlay(this, this.config);
-    new CameraSystem(this, this.player, this.config, this.built.bounds);
+    this.camera = new CameraSystem(this, this.player, this.config, this.built.bounds);
 
     if (this.config.debug.matterDebug) {
       this.matter.world.createDebugGraphic();
       this.matter.world.drawDebug = true;
+    }
+
+    // Developer tuning panel (dev builds only). Edits mutate the live config;
+    // gravity/camera are re-applied via applyLiveConfig.
+    if (import.meta.env.DEV) {
+      this.tuning = new TuningPanel(this.config, { onChange: () => this.applyLiveConfig() });
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+        this.tuning?.destroy();
+        this.tuning = undefined;
+      });
     }
 
     this.input.mouse?.disableContextMenu();
@@ -62,6 +75,13 @@ export class LevelScene extends Phaser.Scene {
     this.input.on('pointerup', this.handlePointerUp, this);
 
     this.drawControlsHint();
+  }
+
+  /** Re-apply config values that are only read at setup (so the tuning panel is live). */
+  private applyLiveConfig(): void {
+    const p = this.config.physics;
+    this.matter.world.setGravity(p.gravityX, p.gravityY, p.gravityScale);
+    this.camera.applyConfig();
   }
 
   update(_time: number, delta: number): void {
@@ -72,6 +92,10 @@ export class LevelScene extends Phaser.Scene {
 
     if (this.inputManager.justPressed('debugToggle')) {
       this.debug.toggle();
+    }
+
+    if (this.inputManager.justPressed('tuningToggle')) {
+      this.tuning?.toggle();
     }
 
     const grounded = this.collision.isGrounded(this.player);
@@ -119,7 +143,7 @@ export class LevelScene extends Phaser.Scene {
       .text(
         12,
         12,
-        'A/D move   SPACE jump   LMB place node   RMB hold to grapple   W/S rope   R restart   ` debug',
+        'A/D move   SPACE jump   LMB place node   RMB hold to grapple   W/S rope   R restart   ` debug   T tune',
         {
           fontFamily: 'monospace',
           fontSize: '14px',

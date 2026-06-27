@@ -13,7 +13,8 @@ export type InputAction =
   | 'ropeRetract'
   | 'ropeExtend'
   | 'restart'
-  | 'debugToggle';
+  | 'debugToggle'
+  | 'tuningToggle';
 
 export class InputManager {
   private readonly keys: Record<InputAction, Phaser.Input.Keyboard.Key>;
@@ -35,6 +36,7 @@ export class InputManager {
       ropeExtend: keyboard.addKey(KC.S),
       restart: keyboard.addKey(KC.R),
       debugToggle: keyboard.addKey(KC.BACKTICK),
+      tuningToggle: keyboard.addKey(KC.T),
     };
 
     // Stop the browser from scrolling/space-activating while playing.
