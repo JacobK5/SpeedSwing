@@ -1,5 +1,6 @@
 import type { GameConfig } from './types';
 import { resolveConfig } from './resolveConfig';
+import { applyConfigInto, loadTuning } from './tuningStore';
 
 import physics from './physics.json';
 import movement from './movement.json';
@@ -31,6 +32,14 @@ export function loadGameConfig(): GameConfig {
 
   for (const warning of warnings) {
     console.warn(warning);
+  }
+
+  // Overlay any tuning the developer saved via the in-game panel so it persists
+  // across restarts and reloads (docs/04-physics-tuning.md). Saved values were
+  // already validated when stored, and are re-validated on load.
+  const saved = loadTuning();
+  if (saved) {
+    applyConfigInto(config, saved);
   }
 
   return config;

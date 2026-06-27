@@ -16,6 +16,8 @@ export interface PhysicsConfig {
   playerWidth: number;
   /** Player placeholder body height in pixels. */
   playerHeight: number;
+  /** Corner rounding (chamfer) radius of the player body; reduces edge snagging. Applied on (re)spawn. */
+  playerChamfer: number;
   /** Matter kinetic friction of the player body (0 = frictionless; movement is code-driven). */
   playerFriction: number;
   /** Matter static friction of the player body. */
@@ -62,10 +64,6 @@ export interface GrappleConfig {
   stiffness: number;
   /** Matter constraint damping (0..1). */
   damping: number;
-  /** Cursor forgiveness radius when selecting the nearest node to attach to (pixels). */
-  attachRadius: number;
-  /** Maximum player-to-node distance allowed when attaching (pixels). */
-  maxAttachDistance: number;
   /** Speed of the fired grapple-node projectile (Matter velocity units). */
   projectileSpeed: number;
   /** Radius of the placeholder projectile body (pixels). */
@@ -96,12 +94,14 @@ export interface DebugConfig {
   drawNodes: boolean;
   /** Draw the player's velocity vector. */
   drawVelocity: boolean;
-  /** Draw the cursor attach-radius circle. */
-  drawAttachRadius: boolean;
+  /** Draw a line to the node a grab would target (nearest to the cursor). */
+  drawAttachTarget: boolean;
   /** Draw the textual state overlay (speed, grounded, rope length, fps). */
   showOverlay: boolean;
   /** Enable Matter's built-in physics-body debug rendering. */
   matterDebug: boolean;
+  /** Pixels drawn per unit of velocity for the debug velocity vector. */
+  velocityDrawScale: number;
 }
 
 /** Properties of a single terrain surface type. */

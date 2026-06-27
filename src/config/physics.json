@@ -4,6 +4,7 @@
   "gravityScale": 0.001,
   "playerWidth": 28,
   "playerHeight": 44,
+  "playerChamfer": 4,
   "playerFriction": 0,
   "playerFrictionStatic": 0,
   "playerFrictionAir": 0,

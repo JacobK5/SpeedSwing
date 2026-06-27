@@ -44,7 +44,7 @@ export class Player {
       frictionStatic: p.playerFrictionStatic,
       frictionAir: p.playerFrictionAir,
       restitution: p.playerRestitution,
-      chamfer: { radius: 4 }, // soften corners so the box does not snag on edges
+      chamfer: { radius: p.playerChamfer }, // soften corners so the box does not snag on edges
       collisionFilter: { ...CollisionFilter.player },
     });
 

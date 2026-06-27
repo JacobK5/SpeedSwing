@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { GameConfig } from '../config/types';
 import type { Player } from '../entities/Player';
 import { hexToInt } from '../core/color';
+import { findNearestNode } from './grappleMath';
 
 /** Everything the overlay needs to render one frame of debug visualisation. */
 export interface DebugContext {
@@ -14,13 +15,12 @@ export interface DebugContext {
   fps: number;
 }
 
-const VELOCITY_DRAW_SCALE = 8;
-
 /**
  * Toggleable developer visualisation (backtick key). Draws the rope, placed
- * nodes, the cursor attach radius and the player's velocity vector in world
- * space, plus a fixed text panel of live state — enough to understand grapple
- * and movement behaviour while tuning (docs/04-physics-tuning.md "Debug").
+ * nodes, a line to the node that a grab would target (nearest to the cursor) and
+ * the player's velocity vector in world space, plus a fixed text panel of live
+ * state — enough to understand grapple and movement behaviour while tuning
+ * (docs/04-physics-tuning.md "Debug").
  */
 export class DebugOverlay {
   enabled: boolean;
@@ -62,15 +62,21 @@ export class DebugOverlay {
     const d = this.config.debug;
     const pos = ctx.player.position;
 
-    if (d.drawAttachRadius) {
-      this.gfx.lineStyle(1, hexToInt('#3a6ea5'), 0.8);
-      this.gfx.strokeCircle(ctx.cursor.x, ctx.cursor.y, this.config.grapple.attachRadius);
-    }
-
     if (d.drawNodes) {
       this.gfx.lineStyle(2, hexToInt('#ffd166'), 0.9);
       for (const node of ctx.nodes) {
         this.gfx.strokeCircle(node.x, node.y, 12);
+      }
+    }
+
+    // The node a grab would target (nearest to the cursor) + a line to it.
+    if (d.drawAttachTarget) {
+      const target = findNearestNode(ctx.nodes, ctx.cursor);
+      if (target) {
+        this.gfx.lineStyle(1, hexToInt('#3a6ea5'), 0.7);
+        this.gfx.lineBetween(ctx.cursor.x, ctx.cursor.y, target.x, target.y);
+        this.gfx.lineStyle(2, hexToInt('#9ad1ff'), 0.9);
+        this.gfx.strokeCircle(target.x, target.y, 16);
       }
     }
 
@@ -81,8 +87,9 @@ export class DebugOverlay {
 
     if (d.drawVelocity) {
       const v = ctx.player.velocity;
+      const scale = d.velocityDrawScale;
       this.gfx.lineStyle(2, hexToInt('#6ee7a8'), 1);
-      this.gfx.lineBetween(pos.x, pos.y, pos.x + v.x * VELOCITY_DRAW_SCALE, pos.y + v.y * VELOCITY_DRAW_SCALE);
+      this.gfx.lineBetween(pos.x, pos.y, pos.x + v.x * scale, pos.y + v.y * scale);
     }
 
     if (d.showOverlay) {

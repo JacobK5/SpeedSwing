@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findNearestNode, computeRopeLength, clamp } from './grappleMath';
-
-const PLAYER = { x: 0, y: 0 };
+import { findNearestNode, computeRopeLength, clamp, resolveImpactPoint } from './grappleMath';
 
 describe('findNearestNode', () => {
   const nodes = [
@@ -10,25 +8,19 @@ describe('findNearestNode', () => {
     { x: 400, y: 0, id: 'c' },
   ];
 
-  it('returns the node nearest the cursor among those within the attach radius', () => {
-    // Cursor near both a and b; b is closer to the cursor.
-    const node = findNearestNode(nodes, { x: 118, y: 0 }, PLAYER, 90, 1000);
+  it('returns the node nearest the cursor', () => {
+    const node = findNearestNode(nodes, { x: 118, y: 0 });
     expect(node?.id).toBe('b');
   });
 
-  it('returns null when no node is within the attach radius of the cursor', () => {
-    const node = findNearestNode(nodes, { x: 250, y: 0 }, PLAYER, 50, 1000);
-    expect(node).toBeNull();
+  it('targets the nearest node no matter how far the cursor is (no radius gate)', () => {
+    // Cursor is far from every node; it still selects the closest one (c).
+    const node = findNearestNode(nodes, { x: 5000, y: 0 });
+    expect(node?.id).toBe('c');
   });
 
-  it('excludes nodes beyond maxAttachDistance from the player', () => {
-    // Cursor sits on node c, but c is 400 from the player; cap at 300.
-    const node = findNearestNode(nodes, { x: 400, y: 0 }, PLAYER, 90, 300);
-    expect(node).toBeNull();
-  });
-
-  it('returns null for an empty node list', () => {
-    expect(findNearestNode([], { x: 0, y: 0 }, PLAYER, 90, 1000)).toBeNull();
+  it('returns null only for an empty node list', () => {
+    expect(findNearestNode([], { x: 0, y: 0 })).toBeNull();
   });
 });
 
@@ -66,5 +58,29 @@ describe('clamp', () => {
     expect(clamp(5, 0, 10)).toBe(5);
     expect(clamp(-1, 0, 10)).toBe(0);
     expect(clamp(11, 0, 10)).toBe(10);
+  });
+});
+
+describe('resolveImpactPoint', () => {
+  it('uses the collision contact point when provided', () => {
+    const point = resolveImpactPoint({ x: 100, y: 100 }, { x: 16, y: 0 }, 6, { x: 110, y: 101 });
+    expect(point).toEqual({ x: 110, y: 101 });
+  });
+
+  it('projects to the leading edge along travel direction when no contact is given', () => {
+    const point = resolveImpactPoint({ x: 100, y: 0 }, { x: 16, y: 0 }, 6, null);
+    expect(point.x).toBeCloseTo(106, 5); // centre + radius in the +x travel direction
+    expect(point.y).toBeCloseTo(0, 5);
+  });
+
+  it('falls back to the centre when velocity is zero', () => {
+    const point = resolveImpactPoint({ x: 50, y: 50 }, { x: 0, y: 0 }, 6, null);
+    expect(point).toEqual({ x: 50, y: 50 });
+  });
+
+  it('ignores a non-finite contact point and uses the leading edge', () => {
+    const point = resolveImpactPoint({ x: 0, y: 0 }, { x: 0, y: 10 }, 5, { x: NaN, y: 0 });
+    expect(point.x).toBeCloseTo(0, 5);
+    expect(point.y).toBeCloseTo(5, 5);
   });
 });

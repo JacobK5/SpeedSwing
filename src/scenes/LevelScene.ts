@@ -59,6 +59,7 @@ export class LevelScene extends Phaser.Scene {
 
     this.input.mouse?.disableContextMenu();
     this.input.on('pointerdown', this.handlePointerDown, this);
+    this.input.on('pointerup', this.handlePointerUp, this);
 
     this.drawControlsHint();
   }
@@ -74,7 +75,14 @@ export class LevelScene extends Phaser.Scene {
     }
 
     const grounded = this.collision.isGrounded(this.player);
-    this.movement.update(this.player, this.inputManager, this.config, delta, grounded);
+    this.movement.update(
+      this.player,
+      this.inputManager,
+      this.config,
+      delta,
+      grounded,
+      this.grapple.isAttached(),
+    );
     this.player.sync();
     this.grapple.update(this.inputManager, delta);
 
@@ -94,7 +102,15 @@ export class LevelScene extends Phaser.Scene {
     if (pointer.leftButtonDown()) {
       this.grapple.fire(world.x, world.y);
     } else if (pointer.rightButtonDown()) {
-      this.grapple.attachOrRelease(world.x, world.y);
+      // Hold-to-grapple: press attaches to the node nearest the cursor.
+      this.grapple.attachToNearest(world.x, world.y);
+    }
+  }
+
+  private handlePointerUp(pointer: Phaser.Input.Pointer): void {
+    // Hold-to-grapple: releasing the right button detaches.
+    if (pointer.rightButtonReleased()) {
+      this.grapple.release();
     }
   }
 
@@ -103,7 +119,7 @@ export class LevelScene extends Phaser.Scene {
       .text(
         12,
         12,
-        'A/D move   SPACE jump   LMB place node   RMB grapple   W/S rope   R restart   ` debug',
+        'A/D move   SPACE jump   LMB place node   RMB hold to grapple   W/S rope   R restart   ` debug',
         {
           fontFamily: 'monospace',
           fontSize: '14px',

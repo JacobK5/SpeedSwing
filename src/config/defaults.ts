@@ -23,6 +23,7 @@ export const DEFAULT_PHYSICS: PhysicsConfig = {
   gravityScale: 0.001,
   playerWidth: 28,
   playerHeight: 44,
+  playerChamfer: 4,
   playerFriction: 0,
   playerFrictionStatic: 0,
   playerFrictionAir: 0,
@@ -48,8 +49,6 @@ export const DEFAULT_GRAPPLE: GrappleConfig = {
   extendSpeed: 260,
   stiffness: 0.9,
   damping: 0.05,
-  attachRadius: 90,
-  maxAttachDistance: 700,
   projectileSpeed: 16,
   projectileRadius: 6,
   projectileLifetime: 3,
@@ -67,9 +66,10 @@ export const DEFAULT_DEBUG: DebugConfig = {
   drawRope: true,
   drawNodes: true,
   drawVelocity: true,
-  drawAttachRadius: true,
+  drawAttachTarget: true,
   showOverlay: true,
   matterDebug: false,
+  velocityDrawScale: 8,
 };
 
 export const DEFAULT_SURFACES: Record<string, SurfaceDef> = {

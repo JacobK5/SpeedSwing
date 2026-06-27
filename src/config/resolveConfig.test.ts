@@ -58,3 +58,50 @@ describe('resolveConfig', () => {
     expect(config.debug.startEnabled).toBe(true);
   });
 });
+
+describe('resolveConfig range validation', () => {
+  it('clamps negative rope minLength to 0 and warns about the exact field', () => {
+    const { config, warnings } = resolveConfig({ grapple: { minLength: -50 } });
+    expect(config.grapple.minLength).toBe(0);
+    expect(warnings.some((w) => w.includes('grapple.minLength'))).toBe(true);
+  });
+
+  it('clamps stiffness above 1 down to 1', () => {
+    const { config, warnings } = resolveConfig({ grapple: { stiffness: 2 } });
+    expect(config.grapple.stiffness).toBe(1);
+    expect(warnings.some((w) => w.includes('grapple.stiffness'))).toBe(true);
+  });
+
+  it('clamps damping below 0 up to 0', () => {
+    const { config } = resolveConfig({ grapple: { damping: -0.5 } });
+    expect(config.grapple.damping).toBe(0);
+  });
+
+  it('clamps a negative run speed to 0', () => {
+    const { config } = resolveConfig({ movement: { maxRunSpeed: -3 } });
+    expect(config.movement.maxRunSpeed).toBe(0);
+  });
+
+  it('clamps camera zoom of 0 up to the minimum', () => {
+    const { config, warnings } = resolveConfig({ camera: { zoom: 0 } });
+    expect(config.camera.zoom).toBeGreaterThan(0);
+    expect(warnings.some((w) => w.includes('camera.zoom'))).toBe(true);
+  });
+
+  it('clamps a negative gravity scale to 0', () => {
+    const { config } = resolveConfig({ physics: { gravityScale: -1 } });
+    expect(config.physics.gravityScale).toBe(0);
+  });
+
+  it('fixes minLength > maxLength by clamping minLength to maxLength', () => {
+    const { config, warnings } = resolveConfig({ grapple: { minLength: 500, maxLength: 200 } });
+    expect(config.grapple.minLength).toBe(200);
+    expect(config.grapple.maxLength).toBe(200);
+    expect(warnings.some((w) => w.includes('minLength') && w.includes('maxLength'))).toBe(true);
+  });
+
+  it('leaves in-range defaults untouched with no warnings', () => {
+    const { warnings } = resolveConfig({});
+    expect(warnings).toHaveLength(0);
+  });
+});

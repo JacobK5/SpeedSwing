@@ -3,7 +3,8 @@
   "drawRope": true,
   "drawNodes": true,
   "drawVelocity": true,
-  "drawAttachRadius": true,
+  "drawAttachTarget": true,
   "showOverlay": true,
-  "matterDebug": false
+  "matterDebug": false,
+  "velocityDrawScale": 8
 }

@@ -7,6 +7,7 @@ import {
   DEFAULT_DEBUG,
   DEFAULT_SURFACES,
 } from './defaults';
+import { RANGES, clampToRange, type CategoryRanges } from './ranges';
 
 // Pure configuration resolution.
 //
@@ -90,6 +91,42 @@ function resolveCategory<T extends object>(
   return result;
 }
 
+/** Clamp a resolved category's numeric fields into their documented ranges. */
+function clampCategory(
+  values: Record<string, Primitive>,
+  ranges: CategoryRanges,
+  categoryName: string,
+  warnings: string[],
+): void {
+  for (const [key, range] of Object.entries(ranges)) {
+    const value = values[key];
+    if (typeof value !== 'number') {
+      continue;
+    }
+    const clamped = clampToRange(value, range);
+    if (clamped !== value) {
+      const lo = range.min ?? '-inf';
+      const hi = range.max ?? 'inf';
+      warnings.push(
+        `config: "${categoryName}.${key}" value ${value} is out of range [${lo}, ${hi}]; clamped to ${clamped}.`,
+      );
+      values[key] = clamped;
+    }
+  }
+}
+
+/** Enforce cross-field relationships that individual ranges cannot express. */
+function enforceRelationships(config: GameConfig, warnings: string[]): void {
+  const g = config.grapple;
+  if (g.minLength > g.maxLength) {
+    warnings.push(
+      `config: grapple.minLength (${g.minLength}) exceeds grapple.maxLength (${g.maxLength}); ` +
+        `clamping minLength to maxLength.`,
+    );
+    g.minLength = g.maxLength;
+  }
+}
+
 /** Merge the surface table, validating each known surface's fields. */
 function resolveSurfaces(raw: unknown, warnings: string[]): Record<string, SurfaceDef> {
   const result: Record<string, SurfaceDef> = {};
@@ -146,6 +183,15 @@ export function resolveConfig(raw: RawConfigInput = {}): ResolveResult {
     debug: resolveCategory(DEFAULT_DEBUG, raw.debug, 'debug', warnings),
     surfaces: resolveSurfaces(raw.surfaces, warnings),
   };
+
+  // Clamp numeric values into their documented ranges, then fix cross-field
+  // relationships (e.g. minLength must not exceed maxLength).
+  clampCategory(config.physics as unknown as Record<string, Primitive>, RANGES.physics, 'physics', warnings);
+  clampCategory(config.movement as unknown as Record<string, Primitive>, RANGES.movement, 'movement', warnings);
+  clampCategory(config.grapple as unknown as Record<string, Primitive>, RANGES.grapple, 'grapple', warnings);
+  clampCategory(config.camera as unknown as Record<string, Primitive>, RANGES.camera, 'camera', warnings);
+  clampCategory(config.debug as unknown as Record<string, Primitive>, RANGES.debug, 'debug', warnings);
+  enforceRelationships(config, warnings);
 
   return { config, warnings };
 }

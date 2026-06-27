@@ -7,31 +7,19 @@ export interface Point {
 }
 
 /**
- * Select the grapple node to attach to: the one nearest the cursor, within
- * `attachRadius` of the cursor (forgiveness) and within `maxAttachDistance` of
- * the player. Returns null if no node qualifies.
+ * Select the grapple node nearest the cursor. There is no radius or distance
+ * gate: grabbing always targets the closest node to the cursor, which playtested
+ * as far smoother than requiring the cursor to be within a forgiveness radius.
+ * Returns null only when there are no nodes.
  */
-export function findNearestNode<T extends Point>(
-  nodes: readonly T[],
-  cursor: Point,
-  player: Point,
-  attachRadius: number,
-  maxAttachDistance: number,
-): T | null {
+export function findNearestNode<T extends Point>(nodes: readonly T[], cursor: Point): T | null {
   let best: T | null = null;
-  let bestCursorDist = Infinity;
+  let bestDist = Infinity;
 
   for (const node of nodes) {
-    const cursorDist = Math.hypot(node.x - cursor.x, node.y - cursor.y);
-    if (cursorDist > attachRadius) {
-      continue;
-    }
-    const playerDist = Math.hypot(node.x - player.x, node.y - player.y);
-    if (playerDist > maxAttachDistance) {
-      continue;
-    }
-    if (cursorDist < bestCursorDist) {
-      bestCursorDist = cursorDist;
+    const dist = Math.hypot(node.x - cursor.x, node.y - cursor.y);
+    if (dist < bestDist) {
+      bestDist = dist;
       best = node;
     }
   }
@@ -42,6 +30,31 @@ export function findNearestNode<T extends Point>(
 /** Clamp a value to the inclusive [min, max] range. */
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+/**
+ * Resolve where a grapple node should be placed when a projectile hits terrain.
+ * Prefers the actual collision contact point; otherwise projects the projectile
+ * centre forward to its leading edge along the travel direction, so the node sits
+ * on the surface rather than at the (slightly penetrated) body centre.
+ */
+export function resolveImpactPoint(
+  center: Point,
+  velocity: Point,
+  radius: number,
+  contact?: Point | null,
+): Point {
+  if (contact && Number.isFinite(contact.x) && Number.isFinite(contact.y)) {
+    return { x: contact.x, y: contact.y };
+  }
+  const speed = Math.hypot(velocity.x, velocity.y);
+  if (speed === 0) {
+    return { x: center.x, y: center.y };
+  }
+  return {
+    x: center.x + (velocity.x / speed) * radius,
+    y: center.y + (velocity.y / speed) * radius,
+  };
 }
 
 /**

@@ -8,7 +8,7 @@ import { Projectile } from '../entities/Projectile';
 import { Rope } from '../physics/Rope';
 import { isTerrainLabel } from '../physics/CollisionCategories';
 import { hexToInt } from '../core/color';
-import { findNearestNode, computeRopeLength, clamp } from './grappleMath';
+import { findNearestNode, computeRopeLength, clamp, resolveImpactPoint } from './grappleMath';
 
 /**
  * Owns grapple-node projectiles and the permanent nodes they create.
@@ -97,23 +97,20 @@ export class GrappleSystem {
 
   // --- Rope attachment ---
 
-  /** Toggle the rope: release if attached, else attach to the nearest valid node near the cursor. */
-  attachOrRelease(cursorX: number, cursorY: number): void {
-    if (this.rope) {
-      this.release();
+  /**
+   * Attach to the node nearest the cursor (hold-to-grapple: called on right-mouse
+   * press). There is no radius/distance gate — grabbing always targets the closest
+   * node, which playtested as much smoother. Any existing rope is replaced.
+   */
+  attachToNearest(cursorX: number, cursorY: number): void {
+    const target = findNearestNode(this.nodes, { x: cursorX, y: cursorY });
+    if (!target) {
       return;
     }
-    const g = this.config.grapple;
-    const node = findNearestNode(
-      this.nodes,
-      { x: cursorX, y: cursorY },
-      this.player.position,
-      g.attachRadius,
-      g.maxAttachDistance,
-    );
-    if (node) {
-      this.attach(node);
+    if (this.rope) {
+      this.release();
     }
+    this.attach(target);
   }
 
   release(): void {
@@ -164,11 +161,17 @@ export class GrappleSystem {
       // Resolve the hit but defer body removal to update(); mutating the Matter
       // world from inside a collision callback is unsafe.
       const info = this.surfaceByBodyId.get(terrainBody.id);
-      const { x, y } = projectile.body.position;
+      const contact = pair.contacts && pair.contacts.length > 0 ? pair.contacts[0] : null;
+      const impact = resolveImpactPoint(
+        projectile.body.position,
+        projectile.body.velocity,
+        this.config.grapple.projectileRadius,
+        contact,
+      );
       if (info && info.def.canPlaceNode) {
-        this.placeNode(x, y);
+        this.placeNode(impact.x, impact.y);
       } else {
-        this.flashReject(x, y);
+        this.flashReject(impact.x, impact.y);
       }
       projectile.dead = true;
     }
