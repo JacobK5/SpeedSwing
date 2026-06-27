@@ -144,4 +144,12 @@ describe('MovementSystem terminal velocity', () => {
     sys.update(player, makeInput({}), config({ maxFallSpeed: 12 }), STEP_MS, false);
     expect(player.velocity.y).toBe(12);
   });
+
+  it('does not clamp downward velocity while grappling (preserves swing energy)', () => {
+    const sys = new MovementSystem();
+    const player = makePlayer(0, 50); // above maxFallSpeed (20)
+    // isGrounded = false, isGrappling = true
+    sys.update(player, makeInput({}), config(), STEP_MS, false, true);
+    expect(player.velocity.y).toBe(50);
+  });
 });

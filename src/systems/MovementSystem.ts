@@ -36,10 +36,14 @@ function approach(current: number, target: number, maxDelta: number): number {
  * the target run speed but never brakes a body already moving faster in the same
  * direction (e.g. after a grapple swing), and there is no air drag by default.
  * Vertical velocity is left to Matter's gravity + the rope constraint, with only
- * a terminal-fall clamp and jump impulse applied here, so swinging stays intact.
+ * a jump impulse and a terminal-fall clamp applied here.
  *
- * Ground state is supplied by the caller (computed via CollisionSystem) which
- * keeps this system free of Phaser/Matter dependencies and trivially testable.
+ * The terminal-fall clamp is skipped while grappling: a swing's downward arc can
+ * legitimately exceed free-fall terminal velocity, and clamping it would bleed
+ * off swing momentum (AGENTS.md "momentum is sacred"; docs/03 swing preservation).
+ *
+ * Ground/grapple state are supplied by the caller (CollisionSystem / GrappleSystem)
+ * which keeps this system free of Phaser/Matter dependencies and trivially testable.
  */
 export class MovementSystem {
   update(
@@ -48,6 +52,7 @@ export class MovementSystem {
     config: GameConfig,
     deltaMs: number,
     isGrounded: boolean,
+    isGrappling = false,
   ): void {
     const dt = deltaMs / 1000;
     const m = config.movement;
@@ -85,8 +90,8 @@ export class MovementSystem {
       player.coyoteTimer = 0;
     }
 
-    // --- Terminal fall speed clamp ---
-    if (newVy > m.maxFallSpeed) {
+    // --- Terminal fall speed clamp (not while grappling: preserve swing energy) ---
+    if (!isGrappling && newVy > m.maxFallSpeed) {
       newVy = m.maxFallSpeed;
     }
 
