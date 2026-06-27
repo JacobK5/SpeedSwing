@@ -119,11 +119,8 @@ Rope stiffness
 
 Rope damping
 
-Attach radius
-
-Attach forgiveness
-
-Maximum grapple distance
+Maximum attach distance (player-to-node reach; a cursor forgiveness radius was
+tried and rejected in playtesting — targeting is nearest-node-to-cursor instead)
 
 Release behavior
 

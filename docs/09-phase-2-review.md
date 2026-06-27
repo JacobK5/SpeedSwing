@@ -1,5 +1,13 @@
 # Phase 2 Implementation Review
 
+> **HISTORICAL — not current status.** The findings below were reviewed against
+> HEAD `8424419` and have since been **addressed** in later commits (config
+> validation, ground detection, swing momentum, accurate placement, the in-game
+> tuning panel, the configurable `maxAttachDistance` reach limit, and the doc
+> fixes). This document is kept for context only; do not treat it as the current
+> state of the project. For current status see [`README.md`](../README.md)
+> ("Implementation status").
+
 Review date: 2026-06-26
 
 Reviewed branch: `feature/v0.1-phases-0-2`

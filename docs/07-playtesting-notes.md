@@ -217,7 +217,7 @@ Small list.
 
 Examples:
 
-Increase grapple forgiveness.
+Increase grapple reach.
 
 Test lower gravity.
 
