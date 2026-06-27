@@ -36,6 +36,29 @@ The project is currently focused on validating one question:
 
 Until that question is answered, no major gameplay systems should be added.
 
+## Implementation status
+
+The **Current Scope** list further down describes the *full* Version 0.1 target.
+Development proceeds in phases (see [docs/06-development-roadmap.md](docs/06-development-roadmap.md));
+not all of that scope is built yet.
+
+Implemented so far (Phases 0–2):
+
+- Project foundation, scenes, config + level loading and validation.
+- Running, jumping, air control, gravity, collision, smooth-follow camera.
+- Grappling: player-placed permanent nodes, rope swinging, W/S extend/retract.
+- Developer tuning panel (press **T**) and debug overlay (press **`**).
+
+Not yet implemented (later phases, intentionally deferred):
+
+- Bunny-hop / landing momentum preservation (Phase 3).
+- Goal completion, speedrun timer, kill-zone restart, explosives, destructible
+  terrain behaviour, ammunition/resource limits (Phase 4+).
+
+Level files and the surface table already carry forward-compatible data for some
+of the deferred items (e.g. a goal marker, destructible/kill-zone surface types),
+but their gameplay behaviour is not active yet.
+
 ---
 
 # Technology

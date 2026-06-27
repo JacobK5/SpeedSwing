@@ -8,7 +8,7 @@ export default defineConfig({
   base: './',
   build: {
     target: 'es2020',
-    chunkSizeWarningLimit: 1500, // Phaser is a large single dependency; silence the noise.
+    chunkSizeWarningLimit: 2000, // Phaser is a large single dependency; silence the noise.
   },
   test: {
     // Config and level-format logic is pure; no DOM is required for unit tests.

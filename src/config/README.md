@@ -33,8 +33,16 @@ gracefully instead of crashing the game.
 
 During `npm run dev`, editing any JSON file hot-reloads the game. Keep the field
 set in sync with `types.ts`/`defaults.ts`; unknown keys are ignored with a
-warning.
+warning. Values are also clamped to the documented ranges in
+[`ranges.ts`](./ranges.ts) (with a warning naming the field), and cross-field
+rules — e.g. `grapple.minLength <= grapple.maxLength` — are enforced.
 
-> A live in-game tuning panel (sliders + save/load) is planned but intentionally
-> deferred — see the handoff notes. This config layout is the foundation it will
-> build on.
+## Live tuning panel
+
+In development builds, press **T** in the level to open the in-game tuning panel
+(`src/systems/TuningPanel.ts`). It edits the movement / physics / grapple /
+camera / debug categories live, and can **Save**, **Load** and **Restore
+Defaults** via local storage (`tuningStore.ts`). Saved tuning is overlaid by
+`loadGameConfig` on every load, so it survives restarts and reloads. Most values
+apply instantly; player body size / friction / chamfer apply on the next restart
+(R).
