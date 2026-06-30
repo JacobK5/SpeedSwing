@@ -465,6 +465,45 @@ interaction needs human verification in a browser.
 
 ---
 
+# Decision #016
+
+## Title
+
+Limp Rope Is Being Trialled Against The Rigid Rope
+
+## Status
+
+Trial — feel not yet validated (branch `feature/limp-rope`)
+
+## Decision
+
+The grapple rope can behave as a one-sided rope that goes limp when there is
+slack, instead of the original two-sided constraint that holds the player at the
+rope length in both directions (a rigid rod). The behaviour is selected by the
+`grapple.ropeGoesLimp` config flag, defaulting to `true` on the trial branch and
+toggleable live in the tuning panel so the two feels can be compared in one build.
+
+When limp, each physics step the constraint's stiffness and damping are zeroed
+while the player is closer to the anchor than the rope length, and restored once
+the rope is taut.
+
+## Rationale
+
+A real rope only pulls when taut. Letting it go limp should unlock rope-dynamics
+movement — dropping below an anchor and being caught, building slack for a yank,
+swinging inward freely — which fits "momentum is sacred" and the high skill
+ceiling goal of #009. It is a feel experiment, hence the live toggle.
+
+## Consequences
+
+If the limp rope feels better it becomes the default and #009's "behaves as a
+rope" is fully realised; if not, the flag flips off and the rigid behaviour
+stands. The taut/slack rule is a pure, unit-tested helper (`isRopeTaut`); the
+zero-force-while-slack approach relies on Matter applying neither spring nor
+damping force when both are zero. Feel must be validated by a human in a browser.
+
+---
+
 # Future Decisions
 
 When adding a new decision:

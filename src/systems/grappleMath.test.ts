@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findAttachTarget, computeRopeLength, clamp, resolveImpactPoint } from './grappleMath';
+import { findAttachTarget, computeRopeLength, clamp, resolveImpactPoint, isRopeTaut } from './grappleMath';
 
 describe('findAttachTarget', () => {
   const player = { x: 0, y: 0 };
@@ -62,6 +62,24 @@ describe('computeRopeLength', () => {
   it('nets the difference when both are held', () => {
     const next = computeRopeLength(300, true, true, 200, 260, 0.5, 40, 600);
     expect(next).toBeCloseTo(300 + (260 - 200) * 0.5, 5);
+  });
+});
+
+describe('isRopeTaut', () => {
+  it('is always taut when the rope cannot go limp (rigid rod)', () => {
+    expect(isRopeTaut(50, 300, false)).toBe(true); // slack distance, still taut
+    expect(isRopeTaut(300, 300, false)).toBe(true);
+    expect(isRopeTaut(400, 300, false)).toBe(true);
+  });
+
+  it('is limp (not taut) when there is slack', () => {
+    expect(isRopeTaut(50, 300, true)).toBe(false);
+    expect(isRopeTaut(299.9, 300, true)).toBe(false);
+  });
+
+  it('is taut at or beyond the rope length when it can go limp', () => {
+    expect(isRopeTaut(300, 300, true)).toBe(true); // exactly taut
+    expect(isRopeTaut(450, 300, true)).toBe(true); // stretched
   });
 });
 

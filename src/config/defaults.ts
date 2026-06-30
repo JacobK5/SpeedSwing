@@ -56,6 +56,7 @@ export const DEFAULT_GRAPPLE: GrappleConfig = {
   extendSpeed: 260,
   stiffness: 0.9,
   damping: 0.05,
+  ropeGoesLimp: true,
   projectileSpeed: 16,
   projectileRadius: 6,
   projectileLifetime: 3,

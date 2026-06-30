@@ -110,6 +110,10 @@ It should:
 * allow release at any time
 * immediately reattach to another node
 
+Whether the rope goes limp when slack (a true one-sided rope) or stays rigid in
+both directions is a live feel trial — see DECISIONS.md #016 and the
+`grapple.ropeGoesLimp` tuning toggle.
+
 The grapple is primarily a movement tool.
 
 It is not intended to function as a weapon.

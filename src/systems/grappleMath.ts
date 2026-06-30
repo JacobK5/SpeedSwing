@@ -71,6 +71,22 @@ export function resolveImpactPoint(
 }
 
 /**
+ * Whether the rope is taut (under tension) this step.
+ *
+ * A real rope only pulls when stretched to its full length and goes limp when
+ * there is slack. When `goesLimp` is false the rope behaves like a rigid rod —
+ * always taut — which is the original two-sided-constraint behaviour. When true,
+ * it is taut only while the player is at or beyond the rope length, so falling /
+ * swinging inward applies no force until the rope catches.
+ */
+export function isRopeTaut(distanceToAnchor: number, length: number, goesLimp: boolean): boolean {
+  if (!goesLimp) {
+    return true;
+  }
+  return distanceToAnchor >= length;
+}
+
+/**
  * Compute the next rope length given retract (W) / extend (S) input this frame,
  * clamped to [minLength, maxLength]. Holding both nets their difference.
  */

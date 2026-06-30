@@ -119,6 +119,9 @@ Rope stiffness
 
 Rope damping
 
+Rope goes limp (one-sided rope that only pulls when taut vs. a rigid rod held at
+length in both directions — a feel trial; see DECISIONS.md #016)
+
 Maximum attach distance (player-to-node reach; a cursor forgiveness radius was
 tried and rejected in playtesting — targeting is nearest-node-to-cursor instead)
 

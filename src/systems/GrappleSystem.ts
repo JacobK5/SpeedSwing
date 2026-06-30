@@ -97,6 +97,9 @@ export class GrappleSystem {
         g.minLength,
         g.maxLength,
       );
+      // Re-evaluate tension after any length change: a limp rope exerts no force
+      // while slack and only pulls once taut (DECISIONS.md #016).
+      this.rope.update(g.ropeGoesLimp);
     }
 
     this.drawRope();

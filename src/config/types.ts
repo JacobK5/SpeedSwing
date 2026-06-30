@@ -105,6 +105,14 @@ export interface GrappleConfig {
   stiffness: number;
   /** Matter constraint damping (0..1). */
   damping: number;
+  /**
+   * When true, the rope only pulls while taut (player at/beyond the rope length)
+   * and goes limp — applying no force — whenever there is slack, so you can fall
+   * or swing inward freely until the rope catches. When false the constraint is
+   * two-sided like a rigid rod (the original behaviour). Toggle live in the
+   * tuning panel to compare the two feels (DECISIONS.md #016).
+   */
+  ropeGoesLimp: boolean;
   /** Speed of the fired grapple-node projectile (Matter velocity units). */
   projectileSpeed: number;
   /** Radius of the placeholder projectile body (pixels). */

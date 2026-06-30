@@ -288,6 +288,29 @@ All weapon/explosion values live in `weapons.json` and the tuning panel.
 
 ---
 
+# Outstanding Playtest Questions — Limp Rope Trial (added 2026-06-30)
+
+Branch `feature/limp-rope` makes the rope one-sided: it goes limp (no force) when
+slack and only pulls when taut, instead of the rigid two-sided rod. `ropeGoesLimp`
+defaults on and is a live tuning-panel toggle, so limp vs. rigid can be A/B'd in
+one build. Logic is unit-tested (`isRopeTaut`); feel is unvalidated. To answer in
+a real browser:
+
+- **Limp vs. rigid:** Which feels better overall? Does limp unlock the intended
+  rope-dynamics (drop-and-catch, build-slack-for-a-yank, swing inward freely), or
+  does it just feel mushy / unpredictable compared to the tight rigid rope?
+- **Catch snap:** When a limp rope goes taut at speed, does the catch feel
+  satisfying or jarring? Is `stiffness` 0.9 / `damping` 0.05 still right for limp,
+  or does limp want softer/harder values than the rigid rod did?
+- **Retract/extend interplay:** Does pumping (W/S) still read well when the rope
+  can go slack, or does slack make length control feel disconnected?
+- **Boundary jitter:** Any visible oscillation when hovering right at the taut
+  distance? If so, does it hurt feel or is it unnoticeable in motion?
+- **Default:** If limp wins, flip the default in `master`; if not, keep rigid and
+  retire the flag (DECISIONS.md #016).
+
+---
+
 # Failed Experiments
 
 This section is intentionally permanent.
