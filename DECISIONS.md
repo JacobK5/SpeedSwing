@@ -361,6 +361,74 @@ player's hands.
 
 ---
 
+# Decision #013
+
+## Title
+
+Ammo Is Consumed On Firing; Explosives Are Routing Tools
+
+## Status
+
+Active
+
+## Decision
+
+Both weapons consume one unit of ammunition when **fired**, not when a node is
+successfully placed or an explosive hits something useful. A shot that misses, or
+hits a no-node surface, still costs ammo. Explosives detonate on terrain contact
+(or at end of life), destroy destructible terrain within a configurable radius,
+and by default apply **no** force to the player (`explosionPlayerForce` defaults
+to 0).
+
+## Rationale
+
+Consuming on fire makes every shot a real decision and keeps the rule trivial to
+reason about, which is what gives the fixed ammo (DECISIONS.md #008) its routing
+weight. Explosives exist to open routes through destructible terrain, not to
+fight — so knockback is opt-in tuning rather than a default behaviour.
+
+## Consequences
+
+Players must aim deliberately. Explosion radius, projectile speed/lifetime, and
+the optional player knockback are all configurable in `weapons.json` / the tuning
+panel and are NOT playtest-validated. Destroyed terrain resets on restart because
+the scene is rebuilt from the level data.
+
+---
+
+# Decision #014
+
+## Title
+
+The Run Clock Starts On First Input, Not On Spawn
+
+## Status
+
+Active
+
+## Decision
+
+The speedrun timer starts the first time the player commits to an action
+(movement key, jump, fire, or grapple) and stops the instant the goal is touched.
+Pausing (Esc) removes paused time from the clock. Restart (R) is instant from any
+state, including the run-complete and pause screens.
+
+## Rationale
+
+Starting on first input lets a player settle, read the level, and plan a route
+without the clock punishing them — the timer measures the run, not the staring.
+This protects flow (DECISIONS.md #010): nothing about timing interrupts movement,
+and retries are always one key away.
+
+## Consequences
+
+The timer is driven by a paused-time-adjusted game clock so pauses never inflate
+a time. Personal bests are stored per level in local storage. What exact action
+should start the clock, and whether bests should be visible mid-run, are open
+playtesting questions.
+
+---
+
 # Future Decisions
 
 When adding a new decision:

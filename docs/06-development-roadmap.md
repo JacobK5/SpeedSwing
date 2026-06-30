@@ -24,6 +24,17 @@ Each phase builds upon confidence gained in previous phases.
 
 Avoid skipping ahead simply because later features seem exciting.
 
+## Current status (2026-06-30)
+
+Phases 0–2 are implemented. Phases 3 (Momentum) and 4 (Prototype Gameplay) have
+also been **implemented in code**, but as a deliberate, time-boxed exception they
+were built *ahead of* their playtesting gates. Their exit criteria — "players
+discover advanced techniques" (Phase 3) and "players willingly replay to improve"
+(Phase 4) — are therefore **not yet satisfied**: they require human playtesting,
+which is the gating activity of Phase 5. All feel-sensitive values are configurable
+so that tuning, not re-coding, closes the gap. See
+[07-playtesting-notes.md](./07-playtesting-notes.md) for the open questions.
+
 ---
 
 # Phase 0 — Foundation

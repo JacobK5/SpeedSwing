@@ -11,9 +11,10 @@ at runtime so movement can be tuned without recompiling.
 | `physics.json`  | Physics  | World gravity and the player Matter body's material properties |
 | `movement.json` | Movement | Run/jump/air-control feel (highest-priority tuning surface)    |
 | `grapple.json`  | Grapple  | Grapple projectile, rope simulation, attach reach              |
+| `weapons.json`  | Weapons  | Explosive projectile, explosion radius/force, default ammo     |
 | `camera.json`   | Camera   | Smooth-follow camera behaviour                                 |
 | `debug.json`    | Debug    | Developer debug-visualisation toggles                          |
-| `surfaces.json` | Surfaces | Terrain surface-type table (colour + collision/node rules)     |
+| `surfaces.json` | Surfaces | Terrain surface-type table (colour + collision/node/kill rules)|
 
 The full meaning, units and expected range of every value is documented inline
 as JSDoc in [`types.ts`](./types.ts). Canonical defaults live in
@@ -42,7 +43,7 @@ rules — e.g. `grapple.minLength <= grapple.maxLength` and
 
 In development builds, press **T** in the level to open the in-game tuning panel
 (`src/systems/TuningPanel.ts`). It edits the movement / physics / grapple /
-camera / debug categories live, and can **Save**, **Load** and **Restore
+weapons / camera / debug categories live, and can **Save**, **Load** and **Restore
 Defaults** via local storage (`tuningStore.ts`). Saved tuning is overlaid by
 `loadGameConfig` on every load, so it survives restarts and reloads. Most values
 apply instantly (including gravity, camera and the debug toggles); the player

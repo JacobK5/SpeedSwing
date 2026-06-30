@@ -168,6 +168,9 @@ Every level begins with a fixed amount of ammunition.
 
 Ammunition does not regenerate.
 
+Ammunition is spent on **firing** — every shot counts, whether or not it lands
+usefully (see DECISIONS.md #013).
+
 Nodes remain after placement.
 
 Running out of ammunition does not prevent level completion.

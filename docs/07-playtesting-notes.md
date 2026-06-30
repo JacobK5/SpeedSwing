@@ -260,6 +260,34 @@ momentum state to make tuning observable.
 
 ---
 
+# Outstanding Playtest Questions — Phase 4 Prototype Loop (added 2026-06-30)
+
+Phase 4 systems and the first greybox benchmark (`benchmark-01`) were also built
+without a playtesting gate. Logic is unit-tested; the loop and level balance are
+unvalidated. To answer with a human in a real browser:
+
+- **Benchmark routes:** Do the high (swing) and low (platform) routes both feel
+  viable? Is the expert ~30s / average ~60s target roughly right? Does the
+  no-node anchor over gap 2 create an interesting choice or just annoyance? Do
+  the recovery ledges actually save mistakes without trivialising the gaps?
+- **Retract-for-height:** Does retracting (W) near the end of a swing onto the
+  raised goal feel discoverable and satisfying (the level is built to test this)?
+- **Ammo counts (6 nodes / 2 explosives):** Too tight, too generous? Does running
+  low create real routing tension without dead-ending the run?
+- **Explosive feel:** Is the explosion radius (90) sensible for the destructible
+  barrier? Should `explosionPlayerForce` be enabled to allow explosive-jump tech,
+  or does that invite chaos? Is detonate-on-contact the right trigger?
+- **Timer start:** Starting on first input — does it feel fair, or should it
+  start on spawn / a countdown? Does the live HUD clock distract from flow?
+- **Kill zones / restart:** Is instant restart fast enough to sustain "one more
+  try"? Do kill zones punish fairly?
+- **Run-complete screen:** Does it show the right info (time, best, delta, ammo
+  used) and get out of the way fast enough?
+
+All weapon/explosion values live in `weapons.json` and the tuning panel.
+
+---
+
 # Failed Experiments
 
 This section is intentionally permanent.
