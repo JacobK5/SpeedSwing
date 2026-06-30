@@ -25,6 +25,8 @@ export class GrappleSystem {
 
   private rope: Rope | null = null;
   private attachedNode: GrappleNode | null = null;
+  /** Always-on rope line so the player can see what they are swinging from. */
+  private readonly ropeGfx: Phaser.GameObjects.Graphics;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -32,6 +34,9 @@ export class GrappleSystem {
     private readonly config: GameConfig,
     private readonly surfaceByBodyId: Map<number, SurfaceInfo>,
   ) {
+    // Depth 8: above nodes/projectiles, below the player (depth 10), so the rope
+    // reads as attaching at the node and running under the player box.
+    this.ropeGfx = scene.add.graphics().setDepth(8);
     scene.matter.world.on('collisionstart', this.handleCollision, this);
   }
 
@@ -92,6 +97,22 @@ export class GrappleSystem {
         g.minLength,
         g.maxLength,
       );
+    }
+
+    this.drawRope();
+  }
+
+  /**
+   * Draw the rope line whenever attached, regardless of debug state — you must be
+   * able to see what you are swinging from to control rope length and arcs. The
+   * debug overlay's rope is a separate diagnostic; this is the gameplay visual.
+   */
+  private drawRope(): void {
+    this.ropeGfx.clear();
+    if (this.rope && this.attachedNode) {
+      const from = this.player.position;
+      this.ropeGfx.lineStyle(3, hexToInt('#e6dcc0'), 1);
+      this.ropeGfx.lineBetween(from.x, from.y, this.attachedNode.x, this.attachedNode.y);
     }
   }
 
