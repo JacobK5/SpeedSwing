@@ -308,6 +308,11 @@ a real browser:
   distance? If so, does it hurt feel or is it unnoticeable in motion?
 - **Default:** If limp wins, flip the default in `master`; if not, keep rigid and
   retire the flag (DECISIONS.md #016).
+- **Rope visual (DECISIONS.md #017):** The rope now renders as a Verlet sim that
+  sags/swings. Does the sag read clearly as slack and make limp feel better, or is
+  it distracting/too floppy? Are the sim constants (sag/gravity, segments, damping)
+  in the right ballpark, or should they move into the tuning panel? Does the drawn
+  rope ever visibly lag the physics on a hard yank in a way that hurts?
 
 ---
 

@@ -504,6 +504,44 @@ damping force when both are zero. Feel must be validated by a human in a browser
 
 ---
 
+# Decision #017
+
+## Title
+
+The Rendered Rope Is A Cosmetic Verlet Sim, Not The Physics Rope
+
+## Status
+
+Active (paired with #016)
+
+## Decision
+
+The on-screen grapple rope is drawn as a Verlet point-chain (`ropeSim.ts` +
+`RopeVisual.ts`) pinned at the anchor and the player and relaxed toward a rest
+length equal to the rope length, so it visibly sags and swings when there is
+slack and pulls straight when taut. It replaces the old straight line. It is
+purely visual and never feeds back into the Matter constraint that actually
+moves the player (#009/#016) — the physics is unchanged.
+
+## Rationale
+
+The limp rope (#016) felt right but the straight-line render hid the slack, so
+the limp state was invisible. A cheap cosmetic sim makes the slack legible and
+adds "juice" (the rope sways/settles) without risking the tuned physics.
+
+## Consequences
+
+The visual and the physics are two representations of one rope; they share
+endpoints + length but not dynamics, so in rare cases (e.g. a fast yank) the
+drawn rope can briefly lag the constraint. The sim is decorative and does not
+collide with terrain, so it may clip geometry when slack near walls — acceptable
+for greybox. Sim parameters (segments, gravity, damping, iterations) are local
+constants in `RopeVisual`, not gameplay config; promote to config only if live
+tuning of the look proves necessary. Sag/relaxation logic is unit tested; the
+look needs human verification in a browser.
+
+---
+
 # Future Decisions
 
 When adding a new decision:
