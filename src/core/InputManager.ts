@@ -13,6 +13,9 @@ export type InputAction =
   | 'ropeRetract'
   | 'ropeExtend'
   | 'restart'
+  | 'pause'
+  | 'selectGrapple'
+  | 'selectExplosive'
   | 'debugToggle'
   | 'tuningToggle';
 
@@ -35,6 +38,9 @@ export class InputManager {
       ropeRetract: keyboard.addKey(KC.W),
       ropeExtend: keyboard.addKey(KC.S),
       restart: keyboard.addKey(KC.R),
+      pause: keyboard.addKey(KC.ESC),
+      selectGrapple: keyboard.addKey(KC.ONE),
+      selectExplosive: keyboard.addKey(KC.TWO),
       debugToggle: keyboard.addKey(KC.BACKTICK),
       tuningToggle: keyboard.addKey(KC.T),
     };

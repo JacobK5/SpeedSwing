@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { GameConfig, SurfaceDef } from '../config/types';
 import type { LevelData } from '../levels/types';
+import type { Rect, Circle } from './regionChecks';
 import { CollisionFilter, terrainLabel } from '../physics/CollisionCategories';
 import { hexToInt, darken } from '../core/color';
 
@@ -9,25 +10,43 @@ export interface SurfaceInfo {
   def: SurfaceDef;
 }
 
+/** A destructible terrain piece the explosive system can remove at runtime. */
+export interface DestructiblePiece {
+  body: MatterJS.BodyType;
+  view: Phaser.GameObjects.Rectangle;
+  /** World-space top-left anchored AABB (for explosion overlap tests). */
+  bounds: Rect;
+  destroyed: boolean;
+}
+
 export interface BuiltLevel {
   /** World extents (padded) for the camera bounds. */
   bounds: { x: number; y: number; width: number; height: number };
   /** Lookup from a terrain body id to its surface info (used by the grapple system). */
   surfaceByBodyId: Map<number, SurfaceInfo>;
+  /** Destructible pieces, removable by explosives; reset by rebuilding on restart. */
+  destructibles: DestructiblePiece[];
+  /** World AABBs of kill-on-touch surfaces (checked against the player each frame). */
+  killzones: Rect[];
+  /** The level goal as a world circle (touching it completes the run). */
+  goal: Circle;
 }
 
 const GRID_SPACING = 200;
 
 /**
  * Instantiates a level's static terrain (Matter bodies + placeholder visuals)
- * plus spawn/goal markers, and reports world bounds and a surface lookup.
+ * plus spawn/goal markers, and reports world bounds, a surface lookup, the
+ * destructible pieces, the kill zones, and the goal trigger.
  *
  * Geometry is authored with top-left anchored rectangles; this converts each to
- * Matter's centre-anchored body. The goal marker is currently non-functional —
- * completion/timer logic is intentionally deferred to Phase 4.
+ * Matter's centre-anchored body. Destructible terrain is rebuilt fresh on every
+ * scene restart, so explosions reset cleanly with no extra bookkeeping.
  */
 export function buildLevel(scene: Phaser.Scene, level: LevelData, config: GameConfig): BuiltLevel {
   const surfaceByBodyId = new Map<number, SurfaceInfo>();
+  const destructibles: DestructiblePiece[] = [];
+  const killzones: Rect[] = [];
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
@@ -49,10 +68,15 @@ export function buildLevel(scene: Phaser.Scene, level: LevelData, config: GameCo
     const cx = piece.x + piece.width / 2;
     const cy = piece.y + piece.height / 2;
     const color = hexToInt(def.color);
+    const bounds: Rect = { x: piece.x, y: piece.y, width: piece.width, height: piece.height };
 
-    scene.add
+    const view = scene.add
       .rectangle(cx, cy, piece.width, piece.height, color)
       .setStrokeStyle(2, darken(color, 0.6));
+
+    if (def.killOnTouch) {
+      killzones.push(bounds);
+    }
 
     if (def.collidable) {
       const body = scene.matter.add.rectangle(cx, cy, piece.width, piece.height, {
@@ -63,6 +87,9 @@ export function buildLevel(scene: Phaser.Scene, level: LevelData, config: GameCo
         collisionFilter: { ...CollisionFilter.terrain },
       });
       surfaceByBodyId.set(body.id, { type: piece.surface, def });
+      if (def.destructible) {
+        destructibles.push({ body, view, bounds, destroyed: false });
+      }
     }
   }
 
@@ -78,6 +105,9 @@ export function buildLevel(scene: Phaser.Scene, level: LevelData, config: GameCo
       height: maxY - minY + pad * 2,
     },
     surfaceByBodyId,
+    destructibles,
+    killzones,
+    goal: { x: level.goal.x, y: level.goal.y, radius: level.goal.radius },
   };
 }
 

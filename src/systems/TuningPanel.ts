@@ -13,7 +13,7 @@ import { applyConfigInto, saveTuning, loadTuning, clearTuning } from '../config/
 // through the onChange callback. Save/Load/Defaults persist via tuningStore.
 
 /** Categories exposed for tuning (surfaces are a data table, not feel values). */
-const TUNED_CATEGORIES: readonly RangedCategory[] = ['movement', 'physics', 'grapple', 'camera', 'debug'];
+const TUNED_CATEGORIES: readonly RangedCategory[] = ['movement', 'physics', 'grapple', 'weapons', 'camera', 'debug'];
 
 export interface TuningPanelCallbacks {
   /** Re-apply values that are only read at setup (gravity, camera). */

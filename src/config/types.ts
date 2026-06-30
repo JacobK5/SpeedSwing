@@ -113,6 +113,28 @@ export interface GrappleConfig {
   projectileLifetime: number;
 }
 
+/** Explosive projectile + ammunition defaults (Phase 4). */
+export interface WeaponsConfig {
+  /** Speed of a fired explosive projectile (Matter velocity units). */
+  explosiveProjectileSpeed: number;
+  /** Radius of the placeholder explosive projectile body (pixels). */
+  explosiveProjectileRadius: number;
+  /** Seconds before an un-detonated explosive air-bursts. */
+  explosiveProjectileLifetime: number;
+  /** Radius within which an explosion destroys destructible terrain (pixels). */
+  explosionRadius: number;
+  /**
+   * Impulse applied to the player if caught within the explosion radius (Matter
+   * velocity units; scaled by closeness). 0 = no knockback (explosives are for
+   * routing/terrain, not combat — knockback is an opt-in tuning surface).
+   */
+  explosionPlayerForce: number;
+  /** Fallback starting grapple-node ammo when a level omits resources. */
+  defaultGrappleAmmo: number;
+  /** Fallback starting explosive ammo when a level omits resources. */
+  defaultExplosiveAmmo: number;
+}
+
 /** Smooth-follow camera. */
 export interface CameraConfig {
   /** Follow interpolation factor per frame (0..1; lower = smoother/laggier). */
@@ -153,8 +175,10 @@ export interface SurfaceDef {
   collidable: boolean;
   /** Whether a grapple node may be placed on this surface. */
   canPlaceNode: boolean;
-  /** Whether explosives destroy this surface (Phase 4 behaviour; data only for now). */
+  /** Whether explosives destroy this surface. */
   destructible: boolean;
+  /** Whether touching this surface instantly restarts the run (kill zone). */
+  killOnTouch: boolean;
 }
 
 /** The fully-resolved configuration consumed by gameplay systems. */
@@ -162,6 +186,7 @@ export interface GameConfig {
   physics: PhysicsConfig;
   movement: MovementConfig;
   grapple: GrappleConfig;
+  weapons: WeaponsConfig;
   camera: CameraConfig;
   debug: DebugConfig;
   /** Terrain surface table keyed by surface-type name. */

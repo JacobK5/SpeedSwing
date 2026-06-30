@@ -2,6 +2,7 @@ import type {
   PhysicsConfig,
   MovementConfig,
   GrappleConfig,
+  WeaponsConfig,
   CameraConfig,
   DebugConfig,
   SurfaceDef,
@@ -60,6 +61,16 @@ export const DEFAULT_GRAPPLE: GrappleConfig = {
   projectileLifetime: 3,
 };
 
+export const DEFAULT_WEAPONS: WeaponsConfig = {
+  explosiveProjectileSpeed: 14,
+  explosiveProjectileRadius: 8,
+  explosiveProjectileLifetime: 3,
+  explosionRadius: 90,
+  explosionPlayerForce: 0,
+  defaultGrappleAmmo: 8,
+  defaultExplosiveAmmo: 3,
+};
+
 export const DEFAULT_CAMERA: CameraConfig = {
   lerp: 0.12,
   deadzoneWidth: 120,
@@ -79,8 +90,8 @@ export const DEFAULT_DEBUG: DebugConfig = {
 };
 
 export const DEFAULT_SURFACES: Record<string, SurfaceDef> = {
-  standard: { color: '#6b7280', collidable: true, canPlaceNode: true, destructible: false },
-  'no-node': { color: '#7c4a4a', collidable: true, canPlaceNode: false, destructible: false },
-  destructible: { color: '#8a6d3b', collidable: true, canPlaceNode: true, destructible: true },
-  killzone: { color: '#3a1f1f', collidable: false, canPlaceNode: false, destructible: false },
+  standard: { color: '#6b7280', collidable: true, canPlaceNode: true, destructible: false, killOnTouch: false },
+  'no-node': { color: '#7c4a4a', collidable: true, canPlaceNode: false, destructible: false, killOnTouch: false },
+  destructible: { color: '#8a6d3b', collidable: true, canPlaceNode: true, destructible: true, killOnTouch: false },
+  killzone: { color: '#3a1f1f', collidable: false, canPlaceNode: false, destructible: false, killOnTouch: true },
 };

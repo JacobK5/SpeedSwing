@@ -5,6 +5,7 @@ import { applyConfigInto, loadTuning } from './tuningStore';
 import physics from './physics.json';
 import movement from './movement.json';
 import grapple from './grapple.json';
+import weapons from './weapons.json';
 import camera from './camera.json';
 import debug from './debug.json';
 import surfaces from './surfaces.json';
@@ -25,6 +26,7 @@ export function loadGameConfig(): GameConfig {
     physics,
     movement,
     grapple,
+    weapons,
     camera,
     debug,
     surfaces,

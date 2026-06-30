@@ -40,6 +40,14 @@ export class MenuScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
+      .text(centerX, height * 0.7, 'L for level select', {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '16px',
+        color: '#8a93a6',
+      })
+      .setOrigin(0.5);
+
+    this.add
       .text(width - 12, height - 12, `v${GAME_VERSION}`, {
         fontFamily: 'monospace',
         fontSize: '14px',
@@ -50,5 +58,6 @@ export class MenuScene extends Phaser.Scene {
     const start = () => this.scene.start(SceneKeys.Level);
     this.input.keyboard?.once('keydown-SPACE', start);
     this.input.once('pointerdown', start);
+    this.input.keyboard?.once('keydown-L', () => this.scene.start(SceneKeys.LevelSelect));
   }
 }

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
 import { MenuScene } from './scenes/MenuScene';
+import { LevelSelectScene } from './scenes/LevelSelectScene';
 import { LevelScene } from './scenes/LevelScene';
 
 // Top-level Phaser bootstrap.
@@ -27,7 +28,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: false,
     },
   },
-  scene: [BootScene, MenuScene, LevelScene],
+  scene: [BootScene, MenuScene, LevelSelectScene, LevelScene],
 };
 
 export const game = new Phaser.Game(config);

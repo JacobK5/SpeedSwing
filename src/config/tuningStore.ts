@@ -36,6 +36,7 @@ export function applyConfigInto(target: GameConfig, source: GameConfig): void {
   Object.assign(target.physics, source.physics);
   Object.assign(target.movement, source.movement);
   Object.assign(target.grapple, source.grapple);
+  Object.assign(target.weapons, source.weapons);
   Object.assign(target.camera, source.camera);
   Object.assign(target.debug, source.debug);
   for (const key of Object.keys(target.surfaces)) {

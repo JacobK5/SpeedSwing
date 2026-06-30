@@ -12,7 +12,7 @@ export interface NumericRange {
 
 export type CategoryRanges = Record<string, NumericRange>;
 
-export type RangedCategory = 'physics' | 'movement' | 'grapple' | 'camera' | 'debug';
+export type RangedCategory = 'physics' | 'movement' | 'grapple' | 'weapons' | 'camera' | 'debug';
 
 export const RANGES: Record<RangedCategory, CategoryRanges> = {
   physics: {
@@ -54,6 +54,15 @@ export const RANGES: Record<RangedCategory, CategoryRanges> = {
     projectileSpeed: { min: 0 },
     projectileRadius: { min: 0.5 },
     projectileLifetime: { min: 0 },
+  },
+  weapons: {
+    explosiveProjectileSpeed: { min: 0 },
+    explosiveProjectileRadius: { min: 0.5 },
+    explosiveProjectileLifetime: { min: 0 },
+    explosionRadius: { min: 0 },
+    explosionPlayerForce: { min: 0 },
+    defaultGrappleAmmo: { min: 0 },
+    defaultExplosiveAmmo: { min: 0 },
   },
   camera: {
     lerp: { min: 0, max: 1 },

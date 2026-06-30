@@ -1,0 +1,9 @@
+{
+  "explosiveProjectileSpeed": 14,
+  "explosiveProjectileRadius": 8,
+  "explosiveProjectileLifetime": 3,
+  "explosionRadius": 90,
+  "explosionPlayerForce": 0,
+  "defaultGrappleAmmo": 8,
+  "defaultExplosiveAmmo": 3
+}

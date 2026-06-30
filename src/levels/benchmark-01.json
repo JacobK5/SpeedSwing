@@ -1,0 +1,41 @@
+{
+  "formatVersion": 1,
+  "metadata": {
+    "name": "Benchmark 01 — Three Gaps",
+    "author": "prototype",
+    "description": "First greybox benchmark. Cross three kill-zone gaps to the raised goal. High route: fire nodes at the ceiling strips and swing (retract near the end of each swing for height/speed). Low route: hop the platforms and recovery ledges. The middle anchor is no-node, forcing a different choice over gap 2. A destructible barrier guards a quick ground entry to the goal. Expert target ~30s, average ~60s."
+  },
+  "spawn": { "x": 150, "y": 1450, "facing": "right" },
+  "goal": { "x": 3720, "y": 1280, "radius": 40 },
+  "geometry": [
+    { "x": 0, "y": 0, "width": 40, "height": 1700, "surface": "standard" },
+    { "x": 3960, "y": 0, "width": 40, "height": 1700, "surface": "standard" },
+    { "x": 0, "y": 0, "width": 4000, "height": 40, "surface": "standard" },
+
+    { "x": 0, "y": 1500, "width": 600, "height": 200, "surface": "standard" },
+    { "x": 560, "y": 1620, "width": 560, "height": 200, "surface": "killzone" },
+    { "x": 1100, "y": 1500, "width": 440, "height": 200, "surface": "standard" },
+    { "x": 1520, "y": 1620, "width": 540, "height": 200, "surface": "killzone" },
+    { "x": 2040, "y": 1500, "width": 420, "height": 200, "surface": "standard" },
+    { "x": 2440, "y": 1620, "width": 560, "height": 200, "surface": "killzone" },
+    { "x": 2960, "y": 1500, "width": 440, "height": 200, "surface": "standard" },
+
+    { "x": 720, "y": 360, "width": 320, "height": 40, "surface": "standard" },
+    { "x": 1320, "y": 300, "width": 320, "height": 40, "surface": "standard" },
+    { "x": 1960, "y": 340, "width": 300, "height": 40, "surface": "no-node" },
+    { "x": 2520, "y": 300, "width": 320, "height": 40, "surface": "standard" },
+    { "x": 3120, "y": 360, "width": 340, "height": 40, "surface": "standard" },
+
+    { "x": 760, "y": 1360, "width": 180, "height": 30, "surface": "standard" },
+    { "x": 2560, "y": 1360, "width": 180, "height": 30, "surface": "standard" },
+
+    { "x": 1640, "y": 1440, "width": 150, "height": 30, "surface": "standard" },
+    { "x": 1830, "y": 1370, "width": 150, "height": 30, "surface": "standard" },
+
+    { "x": 3500, "y": 1320, "width": 460, "height": 40, "surface": "standard" },
+    { "x": 3440, "y": 1480, "width": 520, "height": 40, "surface": "standard" },
+    { "x": 3400, "y": 1320, "width": 40, "height": 200, "surface": "destructible" }
+  ],
+  "resources": { "grappleNodes": 6, "explosives": 2 },
+  "theme": { "background": "#14161c", "grid": true }
+}

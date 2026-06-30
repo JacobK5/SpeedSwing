@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { resolveConfig } from './resolveConfig';
-import { DEFAULT_MOVEMENT, DEFAULT_PHYSICS } from './defaults';
+import { DEFAULT_MOVEMENT, DEFAULT_PHYSICS, DEFAULT_WEAPONS } from './defaults';
 
 describe('resolveConfig', () => {
   it('returns documented defaults when given empty input', () => {
@@ -120,5 +120,23 @@ describe('resolveConfig range validation', () => {
   it('leaves in-range defaults untouched with no warnings', () => {
     const { warnings } = resolveConfig({});
     expect(warnings).toHaveLength(0);
+  });
+});
+
+describe('resolveConfig weapons category', () => {
+  it('returns weapons defaults for empty input', () => {
+    const { config } = resolveConfig({});
+    expect(config.weapons).toEqual(DEFAULT_WEAPONS);
+  });
+
+  it('merges a weapons override over defaults', () => {
+    const { config } = resolveConfig({ weapons: { explosionRadius: 150 } });
+    expect(config.weapons.explosionRadius).toBe(150);
+    expect(config.weapons.defaultGrappleAmmo).toBe(DEFAULT_WEAPONS.defaultGrappleAmmo);
+  });
+
+  it('clamps a negative explosion radius to 0', () => {
+    const { config } = resolveConfig({ weapons: { explosionRadius: -10 } });
+    expect(config.weapons.explosionRadius).toBe(0);
   });
 });

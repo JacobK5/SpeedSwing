@@ -4,6 +4,7 @@
 export const SceneKeys = {
   Boot: 'BootScene',
   Menu: 'MenuScene',
+  LevelSelect: 'LevelSelectScene',
   Level: 'LevelScene',
 } as const;
 

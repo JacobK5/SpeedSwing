@@ -3,6 +3,7 @@ import {
   DEFAULT_PHYSICS,
   DEFAULT_MOVEMENT,
   DEFAULT_GRAPPLE,
+  DEFAULT_WEAPONS,
   DEFAULT_CAMERA,
   DEFAULT_DEBUG,
   DEFAULT_SURFACES,
@@ -23,6 +24,7 @@ export interface RawConfigInput {
   physics?: unknown;
   movement?: unknown;
   grapple?: unknown;
+  weapons?: unknown;
   camera?: unknown;
   debug?: unknown;
   surfaces?: unknown;
@@ -169,6 +171,8 @@ function resolveSurfaces(raw: unknown, warnings: string[]): Record<string, Surfa
         typeof rawSurface.canPlaceNode === 'boolean' ? rawSurface.canPlaceNode : base.canPlaceNode,
       destructible:
         typeof rawSurface.destructible === 'boolean' ? rawSurface.destructible : base.destructible,
+      killOnTouch:
+        typeof rawSurface.killOnTouch === 'boolean' ? rawSurface.killOnTouch : base.killOnTouch,
     };
   }
 
@@ -186,6 +190,7 @@ export function resolveConfig(raw: RawConfigInput = {}): ResolveResult {
     physics: resolveCategory(DEFAULT_PHYSICS, raw.physics, 'physics', warnings),
     movement: resolveCategory(DEFAULT_MOVEMENT, raw.movement, 'movement', warnings),
     grapple: resolveCategory(DEFAULT_GRAPPLE, raw.grapple, 'grapple', warnings),
+    weapons: resolveCategory(DEFAULT_WEAPONS, raw.weapons, 'weapons', warnings),
     camera: resolveCategory(DEFAULT_CAMERA, raw.camera, 'camera', warnings),
     debug: resolveCategory(DEFAULT_DEBUG, raw.debug, 'debug', warnings),
     surfaces: resolveSurfaces(raw.surfaces, warnings),
@@ -196,6 +201,7 @@ export function resolveConfig(raw: RawConfigInput = {}): ResolveResult {
   clampCategory(config.physics as unknown as Record<string, Primitive>, RANGES.physics, 'physics', warnings);
   clampCategory(config.movement as unknown as Record<string, Primitive>, RANGES.movement, 'movement', warnings);
   clampCategory(config.grapple as unknown as Record<string, Primitive>, RANGES.grapple, 'grapple', warnings);
+  clampCategory(config.weapons as unknown as Record<string, Primitive>, RANGES.weapons, 'weapons', warnings);
   clampCategory(config.camera as unknown as Record<string, Primitive>, RANGES.camera, 'camera', warnings);
   clampCategory(config.debug as unknown as Record<string, Primitive>, RANGES.debug, 'debug', warnings);
   enforceRelationships(config, warnings);
