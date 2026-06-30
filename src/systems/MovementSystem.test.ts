@@ -26,6 +26,9 @@ function makePlayer(vx = 0, vy = 0): MovementTarget {
     facing: 1,
     coyoteTimer: 0,
     jumpBufferTimer: 0,
+    wasGrounded: false,
+    bunnyHopTimer: 0,
+    landingPenaltyPending: false,
     setVelocity(x: number, y: number) {
       velocity = { x, y };
     },
@@ -151,5 +154,107 @@ describe('MovementSystem terminal velocity', () => {
     // isGrounded = false, isGrappling = true
     sys.update(player, makeInput({}), config(), STEP_MS, false, true);
     expect(player.velocity.y).toBe(50);
+  });
+});
+
+describe('MovementSystem bunny hop', () => {
+  it('preserves horizontal momentum when jumping in the window above min speed', () => {
+    const sys = new MovementSystem();
+    const player = makePlayer(8, 0); // above bunnyHopMinSpeed (3.5) and maxRunSpeed
+    // Landing frame (wasGrounded=false -> grounded) with a buffered jump + right held.
+    const t = sys.update(player, makeInput({ right: true }, { jump: true }), config(), STEP_MS, true);
+    expect(t.performedBunnyHop).toBe(true);
+    expect(t.performedJump).toBe(true);
+    expect(player.velocity.x).toBe(8); // multiplier 1.0 -> pure preservation
+    expect(player.velocity.y).toBe(-11); // normal jump impulse
+  });
+
+  it('applies the momentum multiplier on a successful bunny hop', () => {
+    const sys = new MovementSystem();
+    const player = makePlayer(8, 0);
+    const t = sys.update(
+      player,
+      makeInput({ right: true }, { jump: true }),
+      config({ bunnyHopMomentumMultiplier: 1.2 }),
+      STEP_MS,
+      true,
+    );
+    expect(t.performedBunnyHop).toBe(true);
+    expect(player.velocity.x).toBeCloseTo(8 * 1.2, 5);
+  });
+
+  it('does not bunny hop below the minimum speed (still a normal jump)', () => {
+    const sys = new MovementSystem();
+    const player = makePlayer(2, 0); // below bunnyHopMinSpeed (3.5)
+    const t = sys.update(player, makeInput({}, { jump: true }), config(), STEP_MS, true);
+    expect(t.performedJump).toBe(true);
+    expect(t.performedBunnyHop).toBe(false);
+    expect(player.velocity.y).toBe(-11);
+  });
+
+  it('never grants a mid-air jump from the bunny-hop window (no double jump)', () => {
+    const sys = new MovementSystem();
+    const player = makePlayer(8, 0);
+    // Frame 1: land and bunny hop.
+    sys.update(player, makeInput({ right: true }, { jump: true }), config(), STEP_MS, true);
+    expect(player.velocity.y).toBe(-11);
+    // Frame 2: now airborne, press jump again -> must NOT jump.
+    const t = sys.update(player, makeInput({ right: true }, { jump: true }), config(), STEP_MS, false);
+    expect(t.performedJump).toBe(false);
+  });
+});
+
+describe('MovementSystem landing momentum', () => {
+  it('applies the landing penalty exactly once when the window lapses grounded', () => {
+    const sys = new MovementSystem();
+    const player = makePlayer(8, 0);
+    // Disable friction so the penalty multiplier is the only horizontal change.
+    const cfg = config({ groundFriction: 0 });
+
+    let penaltyFrames = 0;
+    let penaltyFrameSpeed = 0;
+    for (let i = 0; i < 30; i++) {
+      const t = sys.update(player, makeInput({}), cfg, STEP_MS, true);
+      if (t.landingPenaltyApplied) {
+        penaltyFrames++;
+        penaltyFrameSpeed = player.velocity.x;
+      }
+    }
+    expect(penaltyFrames).toBe(1);
+    expect(penaltyFrameSpeed).toBeCloseTo(8 * 0.9, 5); // landingMomentumPreservation
+    expect(player.velocity.x).toBeCloseTo(8 * 0.9, 5); // and it stays there
+  });
+
+  it('does not penalise speed when walking off a ledge before the window ends', () => {
+    const sys = new MovementSystem();
+    const player = makePlayer(8, 0);
+    const cfg = config({ groundFriction: 0, airDrag: 0 });
+    // Frame 1: land (opens window).
+    sys.update(player, makeInput({}), cfg, STEP_MS, true);
+    // Frames 2+: airborne (walked off) -> no penalty ever.
+    let anyPenalty = false;
+    for (let i = 0; i < 20; i++) {
+      const t = sys.update(player, makeInput({}), cfg, STEP_MS, false);
+      anyPenalty = anyPenalty || t.landingPenaltyApplied;
+    }
+    expect(anyPenalty).toBe(false);
+    expect(player.velocity.x).toBe(8);
+  });
+});
+
+describe('MovementSystem swing control', () => {
+  it('scales air acceleration by swingControlMultiplier while grappling', () => {
+    const sys = new MovementSystem();
+    const player = makePlayer(0, 0);
+    sys.update(player, makeInput({ left: true }), config({ swingControlMultiplier: 2 }), STEP_MS, false, true);
+    // airAcceleration (25) * multiplier (2) * dt
+    expect(player.velocity.x).toBeCloseTo(-50 * STEP_S, 3);
+  });
+
+  it('does not scale air acceleration when not grappling', () => {
+    const sys = new MovementSystem();
+    const player = makePlayer(0, 0);
+    sys.update(player, makeInput({ left: true }), config({ swingControlMultiplier: 2 }), STEP_MS, false, false);
+    expect(player.velocity.x).toBeCloseTo(-25 * STEP_S, 3); // unscaled
   });
 });

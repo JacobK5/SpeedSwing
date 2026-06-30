@@ -318,6 +318,49 @@ New mechanics should generally follow successful playtests rather than precede t
 
 ---
 
+# Decision #012
+
+## Title
+
+Bunny Hop Is a Deferred-Penalty Timing Window, Not an Auto-Hop
+
+## Status
+
+Active
+
+## Decision
+
+Landing opens a short timing window (`movement.bunnyHopWindow`). Jumping inside
+that window with enough horizontal speed (`bunnyHopMinSpeed`) preserves — and
+optionally boosts (`bunnyHopMomentumMultiplier`) — horizontal momentum. Letting
+the window lapse while staying grounded instead applies a one-time horizontal
+multiplier (`landingMomentumPreservation`). Walking off a ledge before the window
+ends keeps full speed (no penalty).
+
+The jump itself always still requires being grounded or within coyote time, so
+this can never auto-jump for the player and can never become a mid-air double
+jump.
+
+## Rationale
+
+This rewards intentional rhythm (the project's mastery goal) without ever taking
+control from the player. Modelling it as a *deferred* penalty means a successful
+hop launches from full landing speed, and a missed hop is what costs speed —
+which is exactly the "skilled players preserve momentum better than beginners"
+property the design asks for.
+
+## Consequences
+
+All five momentum values are configurable and exposed in the tuning panel.
+Defaults (window 0.15s, min speed 3.5, multiplier 1.0, preservation 0.9) are
+first guesses and explicitly NOT validated; they must be tuned through human
+playtesting (see docs/07-playtesting-notes.md). An automatic low-speed "recovery
+assist" was intentionally NOT added: recovery is provided by the bunny hop,
+momentum preservation, and level design (recovery paths), keeping mastery in the
+player's hands.
+
+---
+
 # Future Decisions
 
 When adding a new decision:

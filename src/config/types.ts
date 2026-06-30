@@ -48,6 +48,40 @@ export interface MovementConfig {
   coyoteTime: number;
   /** Window during which a jump pressed before landing is remembered (seconds). */
   jumpBufferTime: number;
+  /**
+   * Bunny-hop timing window (seconds). After landing, a jump performed within
+   * this window counts as a bunny hop and its horizontal momentum is preserved
+   * (and optionally boosted). Miss the window while staying grounded and the
+   * landing momentum penalty applies instead. 0 disables the mechanic.
+   * Rewards intentional rhythm; never auto-jumps and never grants a mid-air jump
+   * (the jump still requires being grounded / within coyote time).
+   */
+  bunnyHopWindow: number;
+  /**
+   * Minimum horizontal speed (velocity units) required for a jump in the
+   * bunny-hop window to qualify as a bunny hop. Slow landings just jump normally.
+   */
+  bunnyHopMinSpeed: number;
+  /**
+   * Horizontal velocity multiplier applied on a successful bunny hop. 1.0 = pure
+   * preservation (the reward is dodging the landing penalty); >1 adds a small
+   * speed boost. Keep modest — large values cause runaway speed.
+   */
+  bunnyHopMomentumMultiplier: number;
+  /**
+   * Horizontal velocity multiplier applied once when a landing's bunny-hop
+   * window expires while the player is still grounded (i.e. they did not bunny
+   * hop). 1.0 = no penalty (momentum sacred); lower bleeds speed off sloppy
+   * landings so timing matters. Walking off a ledge before the window ends keeps
+   * full speed (no penalty) — only "land and stay" pays it.
+   */
+  landingMomentumPreservation: number;
+  /**
+   * Multiplier on air acceleration applied while grappling, so horizontal input
+   * steers a swing more (>1) or less (<1) than free-fall air control. 1.0 leaves
+   * swing steering identical to normal air control.
+   */
+  swingControlMultiplier: number;
 }
 
 /** Grapple node projectile, rope simulation and attach reach. */

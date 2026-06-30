@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { GameConfig } from '../config/types';
 import type { Player } from '../entities/Player';
+import type { MovementTelemetry } from './MovementSystem';
 import { hexToInt } from '../core/color';
 
 /** Everything the overlay needs to render one frame of debug visualisation. */
@@ -14,6 +15,12 @@ export interface DebugContext {
   attachTarget: { x: number; y: number } | null;
   grounded: boolean;
   fps: number;
+  /** Current simulation time (ms) for latching transient indicators. */
+  now: number;
+  /** This frame's movement telemetry (bunny-hop window, momentum state, etc.). */
+  movement: MovementTelemetry;
+  /** Whether the rope is attached (for the momentum-state readout). */
+  grappling: boolean;
 }
 
 /**
@@ -26,12 +33,17 @@ export interface DebugContext {
  * Every flag in config.debug is read each frame, so toggling them in the tuning
  * panel takes effect immediately (including showOverlay).
  */
+/** How long (ms) the "BHOP!" indicator stays lit after a successful bunny hop. */
+const BUNNY_HOP_FLASH_MS = 600;
+
 export class DebugOverlay {
   enabled: boolean;
 
   private readonly config: GameConfig;
   private readonly gfx: Phaser.GameObjects.Graphics;
   private readonly text: Phaser.GameObjects.Text;
+  /** Scene time of the most recent bunny hop, for a brief on-screen flash. */
+  private lastBunnyHopAt = -Infinity;
 
   constructor(scene: Phaser.Scene, config: GameConfig) {
     this.config = config;
@@ -95,16 +107,34 @@ export class DebugOverlay {
     if (d.showOverlay) {
       const v = ctx.player.velocity;
       const speed = Math.hypot(v.x, v.y);
+      const mv = ctx.movement;
+      if (mv.performedBunnyHop) {
+        this.lastBunnyHopAt = ctx.now;
+      }
+      const recentBhop = ctx.now - this.lastBunnyHopAt < BUNNY_HOP_FLASH_MS;
       this.text.setText([
         `fps:      ${ctx.fps.toFixed(0)}`,
         `pos:      ${pos.x.toFixed(0)}, ${pos.y.toFixed(0)}`,
         `vel:      ${v.x.toFixed(2)}, ${v.y.toFixed(2)}`,
-        `speed:    ${speed.toFixed(2)}`,
+        `speed:    ${speed.toFixed(2)}  (h ${mv.horizontalSpeed.toFixed(2)})`,
+        `state:    ${this.momentumState(ctx)}`,
         `grounded: ${ctx.grounded}`,
+        `bhop win: ${mv.bunnyHopWindowActive ? `${(mv.bunnyHopWindowRemaining * 1000).toFixed(0)}ms` : '-'}${recentBhop ? '   << BHOP!' : ''}`,
         `nodes:    ${ctx.nodes.length}`,
         `rope:     ${ctx.ropeAnchor ? `attached (len ${ctx.ropeLength?.toFixed(0)})` : 'detached'}`,
       ]);
     }
+  }
+
+  /** Coarse movement state label for the overlay readout. */
+  private momentumState(ctx: DebugContext): string {
+    if (ctx.grappling) {
+      return 'SWING';
+    }
+    if (!ctx.grounded) {
+      return 'AIR';
+    }
+    return ctx.movement.bunnyHopWindowActive ? 'GROUND (bhop window)' : 'GROUND';
   }
 
   /** Preview the grab target: a line to the valid node, or a red ring when none. */

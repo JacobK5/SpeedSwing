@@ -111,13 +111,14 @@ export class LevelScene extends Phaser.Scene {
     }
 
     const grounded = this.collision.isGrounded(this.player);
-    this.movement.update(
+    const grappling = this.grapple.isAttached();
+    const telemetry = this.movement.update(
       this.player,
       this.inputManager,
       this.config,
       delta,
       grounded,
-      this.grapple.isAttached(),
+      grappling,
     );
     this.player.sync();
     this.grapple.update(this.inputManager, delta);
@@ -132,6 +133,9 @@ export class LevelScene extends Phaser.Scene {
       attachTarget: this.grapple.getAttachTarget(cursor.x, cursor.y),
       grounded,
       fps: this.game.loop.actualFps,
+      now: this.time.now,
+      movement: telemetry,
+      grappling,
     });
   }
 

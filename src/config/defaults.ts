@@ -40,6 +40,11 @@ export const DEFAULT_MOVEMENT: MovementConfig = {
   maxFallSpeed: 20,
   coyoteTime: 0.1,
   jumpBufferTime: 0.12,
+  bunnyHopWindow: 0.15,
+  bunnyHopMinSpeed: 3.5,
+  bunnyHopMomentumMultiplier: 1.0,
+  landingMomentumPreservation: 0.9,
+  swingControlMultiplier: 1.0,
 };
 
 export const DEFAULT_GRAPPLE: GrappleConfig = {

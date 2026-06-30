@@ -37,6 +37,11 @@ export const RANGES: Record<RangedCategory, CategoryRanges> = {
     maxFallSpeed: { min: 0 },
     coyoteTime: { min: 0 },
     jumpBufferTime: { min: 0 },
+    bunnyHopWindow: { min: 0 },
+    bunnyHopMinSpeed: { min: 0 },
+    bunnyHopMomentumMultiplier: { min: 1, max: 3 },
+    landingMomentumPreservation: { min: 0, max: 1 },
+    swingControlMultiplier: { min: 0, max: 5 },
   },
   grapple: {
     minLength: { min: 0 },

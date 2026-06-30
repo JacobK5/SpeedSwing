@@ -42,22 +42,30 @@ The **Current Scope** list further down describes the *full* Version 0.1 target.
 Development proceeds in phases (see [docs/06-development-roadmap.md](docs/06-development-roadmap.md));
 not all of that scope is built yet.
 
-Implemented so far (Phases 0–2):
+Implemented so far (Phases 0–3):
 
 - Project foundation, scenes, config + level loading and validation.
 - Running, jumping, air control, gravity, collision, smooth-follow camera.
 - Grappling: player-placed permanent nodes, rope swinging, W/S extend/retract.
+- Momentum (Phase 3): bunny-hop timing window, landing momentum preservation,
+  swing steering control — all configurable, with debug visibility.
 - Developer tuning panel (press **T**) and debug overlay (press **`**).
 
 Not yet implemented (later phases, intentionally deferred):
 
-- Bunny-hop / landing momentum preservation (Phase 3).
 - Goal completion, speedrun timer, kill-zone restart, explosives, destructible
-  terrain behaviour, ammunition/resource limits (Phase 4+).
+  terrain behaviour, ammunition/resource limits (Phase 4).
 
 Level files and the surface table already carry forward-compatible data for some
 of the deferred items (e.g. a goal marker, destructible/kill-zone surface types),
 but their gameplay behaviour is not active yet.
+
+> **Important:** code existing is not the same as feel being validated. The
+> Phase 3 momentum values have **not** yet been confirmed through human
+> playtesting. Every feel-sensitive value is intentionally exposed in config /
+> the tuning panel so it can be dialled in. See
+> [docs/07-playtesting-notes.md](docs/07-playtesting-notes.md) for the open
+> questions each system still needs a human to answer.
 
 ---
 

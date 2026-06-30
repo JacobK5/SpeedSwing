@@ -30,6 +30,13 @@ export class Player {
   /** Remaining seconds a buffered jump press stays valid. */
   jumpBufferTimer = 0;
 
+  /** Whether the player was grounded last frame (used to detect landings). */
+  wasGrounded = false;
+  /** Remaining seconds in the post-landing bunny-hop window (0 = inactive). */
+  bunnyHopTimer = 0;
+  /** Whether a landing is still waiting to either bunny-hop or pay its penalty. */
+  landingPenaltyPending = false;
+
   private readonly matter: Phaser.Physics.Matter.MatterPhysics;
 
   constructor(scene: Phaser.Scene, x: number, y: number, config: GameConfig) {

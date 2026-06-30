@@ -229,6 +229,37 @@ Avoid making multiple major changes before the next playtest.
 
 ---
 
+# Outstanding Playtest Questions — Phase 3 Momentum (added 2026-06-30)
+
+Phase 3 momentum mechanics were implemented **without** a playtesting gate (a
+deliberate, time-boxed exception). The logic is unit-tested for correctness but
+the *feel* is unvalidated. These must be answered by a human in a real browser:
+
+- **Bunny-hop window (`bunnyHopWindow`, default 0.15s):** Does the window feel
+  rewarding to hit, or either trivially easy / frustratingly strict? Tune up for
+  forgiveness, down for a higher skill ceiling.
+- **Min speed (`bunnyHopMinSpeed`, default 3.5):** Is the threshold for a hop to
+  "count" at a natural speed, or does it gate too early/late?
+- **Hop multiplier (`bunnyHopMomentumMultiplier`, default 1.0 = pure preserve):**
+  Should a perfect hop *boost* speed (e.g. 1.05–1.1) or only preserve it? Watch
+  for runaway speed if boosting.
+- **Landing penalty (`landingMomentumPreservation`, default 0.9):** Does losing
+  ~10% on a flubbed landing feel fair, or does it punish flow too much? 1.0
+  disables the penalty entirely (momentum fully sacred).
+- **Swing control (`swingControlMultiplier`, default 1.0):** Does scaling air
+  control while grappling make swings feel steerable without killing the
+  pendulum? Does retracting (W) near the bottom/end of a swing convert into the
+  height/speed gain the design intends?
+- **Overall:** Do players *discover* bunny-hopping and rope-pumping on their own
+  (the design wants techniques to feel obvious in hindsight), or do they need to
+  be told? Watch for "one more try" moments.
+
+All five values are live-editable via the tuning panel (press **T**) and the
+debug overlay (press **`**) shows the bunny-hop window, grounded state, speed and
+momentum state to make tuning observable.
+
+---
+
 # Failed Experiments
 
 This section is intentionally permanent.
