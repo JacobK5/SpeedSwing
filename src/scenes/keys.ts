@@ -6,6 +6,7 @@ export const SceneKeys = {
   Menu: 'MenuScene',
   LevelSelect: 'LevelSelectScene',
   Level: 'LevelScene',
+  Editor: 'EditorScene',
 } as const;
 
 export type SceneKey = (typeof SceneKeys)[keyof typeof SceneKeys];

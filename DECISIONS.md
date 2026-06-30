@@ -429,6 +429,42 @@ playtesting questions.
 
 ---
 
+# Decision #015
+
+## Title
+
+A Developer-Only Level Editor Is Allowed As Optional Tooling
+
+## Status
+
+Active
+
+## Decision
+
+A minimal, developer-only greybox level editor exists (`src/editor/`), opened via
+the `?editor` URL flag in dev builds only. It reuses the existing level format and
+validator, supports placing/moving/resizing rectangles, choosing surfaces, setting
+spawn/goal/resources, grid snap, JSON import/export, validation, and test-play.
+
+This narrows the blanket "no level editor" item in AGENTS.md / 00-agent-brief.md
+*for development tooling only*: a tool that speeds level iteration is permitted;
+an in-game, player-facing editor remains out of scope.
+
+## Rationale
+
+The prototype now has enough gameplay systems that authoring test levels by hand
+is the slow part of iteration. A simple editor that produces the same JSON the
+game already loads removes that friction without changing the game itself.
+
+## Consequences
+
+The editor must stay simple and dev-only, and must never drive an architecture
+rewrite. It is not reachable from release builds' normal flow and its feel/UX is
+not playtest-validated. Its pure model helpers are unit tested; the canvas
+interaction needs human verification in a browser.
+
+---
+
 # Future Decisions
 
 When adding a new decision:

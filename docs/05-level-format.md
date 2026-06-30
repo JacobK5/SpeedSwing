@@ -12,6 +12,10 @@ Version 0.1 uses JSON as the storage format, but the conceptual structure should
 
 ---
 
+Levels can be authored by hand or with the developer-only level editor
+([10-level-editor.md](./10-level-editor.md)), which reads and writes this exact
+format.
+
 # Design Philosophy
 
 Levels should be lightweight.

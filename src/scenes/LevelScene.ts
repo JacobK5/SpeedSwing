@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { SceneKeys } from './keys';
 import { loadGameConfig } from '../config/loadConfig';
 import { loadLevel, DEFAULT_LEVEL, isKnownLevel } from '../levels/loadLevel';
+import { assertValidLevel } from '../levels/validateLevel';
 import type { GameConfig } from '../config/types';
 import type { LevelData } from '../levels/types';
 import { Player } from '../entities/Player';
@@ -25,6 +26,10 @@ import { loadBest, recordRun } from '../systems/personalBest';
 
 interface LevelSceneData {
   levelId?: string;
+  /** Raw in-memory level to test-play (used by the level editor); overrides levelId. */
+  levelData?: unknown;
+  /** Scene to return to with Esc on the run-complete screen (defaults to level select). */
+  returnScene?: string;
 }
 
 type TriggerResult = 'none' | 'kill' | 'goal';
@@ -38,6 +43,8 @@ type TriggerResult = 'none' | 'kill' | 'goal';
  */
 export class LevelScene extends Phaser.Scene {
   private levelId = DEFAULT_LEVEL;
+  private playtestLevel?: unknown;
+  private returnScene = SceneKeys.LevelSelect as string;
   private config!: GameConfig;
   private level!: LevelData;
   private built!: BuiltLevel;
@@ -71,11 +78,22 @@ export class LevelScene extends Phaser.Scene {
     if (data.levelId && isKnownLevel(data.levelId)) {
       this.levelId = data.levelId;
     }
+    // A raw level from the editor: identified separately so its personal best
+    // does not collide with a shipped level of the same id.
+    this.playtestLevel = data.levelData;
+    if (data.levelData) {
+      this.levelId = 'editor:playtest';
+    }
+    if (data.returnScene) {
+      this.returnScene = data.returnScene;
+    }
   }
 
   create(): void {
     this.config = loadGameConfig();
-    this.level = loadLevel(this.levelId, this.config);
+    this.level = this.playtestLevel
+      ? assertValidLevel(this.playtestLevel, Object.keys(this.config.surfaces))
+      : loadLevel(this.levelId, this.config);
 
     this.finished = false;
     this.paused = false;
@@ -166,7 +184,7 @@ export class LevelScene extends Phaser.Scene {
 
     // Restart always works, from any state, for an instant retry loop.
     if (input.justPressed('restart')) {
-      this.scene.restart({ levelId: this.levelId });
+      this.scene.restart(this.restartData());
       return;
     }
 
@@ -210,7 +228,7 @@ export class LevelScene extends Phaser.Scene {
 
     const trigger = this.evaluateTriggers();
     if (trigger === 'kill') {
-      this.scene.restart({ levelId: this.levelId });
+      this.scene.restart(this.restartData());
       return;
     }
     if (trigger === 'goal') {
@@ -296,7 +314,7 @@ export class LevelScene extends Phaser.Scene {
         bestLine,
         `nodes used ${usedNodes}    explosives used ${usedExpl}`,
       ],
-      hint: 'R restart    ESC level select',
+      hint: this.returnScene === SceneKeys.Editor ? 'R restart    ESC back to editor' : 'R restart    ESC level select',
     });
   }
 
@@ -318,8 +336,13 @@ export class LevelScene extends Phaser.Scene {
     }
   }
 
+  /** Data needed to relaunch this exact run on restart (preserves an editor level). */
+  private restartData(): LevelSceneData {
+    return { levelId: this.levelId, levelData: this.playtestLevel, returnScene: this.returnScene };
+  }
+
   private exitToLevelSelect(): void {
-    this.scene.start(SceneKeys.LevelSelect);
+    this.scene.start(this.returnScene);
   }
 
   private handlePointerDown(pointer: Phaser.Input.Pointer): void {

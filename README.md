@@ -55,6 +55,8 @@ Implemented so far (Phases 0–4):
 - Functional flow screens: title, level select, in-run HUD, and run-complete /
   pause overlays.
 - Developer tuning panel (press **T**) and debug overlay (press **`**).
+- Developer-only greybox level editor (dev builds only): open with the `?editor`
+  URL flag, e.g. `http://localhost:5173/?editor`.
 
 Controls: **A/D** move, **Space** jump, **1/2** select weapon, **LMB** fire
 selected weapon, **RMB** hold to grapple, **W/S** retract/extend rope, **R**
@@ -147,6 +149,8 @@ docs/
     06-development-roadmap.md
     07-playtesting-notes.md
     08-dev-workflow.md
+    09-phase-2-review.md
+    10-level-editor.md
 
 VISION.md
 AGENTS.md
