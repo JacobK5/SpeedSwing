@@ -120,7 +120,14 @@ export class GrappleSystem {
       return;
     }
     const p = this.config.physics;
-    this.ropeVisual.update(this.attachedNode, this.player.position, this.rope.length, p.gravityX, p.gravityY);
+    this.ropeVisual.update(
+      this.attachedNode,
+      this.player.position,
+      this.rope.length,
+      p.gravityX,
+      p.gravityY,
+      this.config.grapple.ropeGoesLimp,
+    );
   }
 
   // --- Rope attachment ---

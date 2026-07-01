@@ -108,6 +108,25 @@ export function stepRope(
   }
 }
 
+/**
+ * Reset the chain to a straight, zero-velocity line from anchor to player, in
+ * place. Used for the rigid rope (no slack to show) and cheap enough to run every
+ * frame without allocating.
+ */
+export function straightenRope(points: RopePoint[], anchor: Point, player: Point): void {
+  const last = points.length - 1;
+  for (let i = 0; i < points.length; i++) {
+    const t = last <= 0 ? 0 : i / last;
+    const x = anchor.x + (player.x - anchor.x) * t;
+    const y = anchor.y + (player.y - anchor.y) * t;
+    const p = points[i];
+    p.x = x;
+    p.y = y;
+    p.prevX = x;
+    p.prevY = y;
+  }
+}
+
 function pinEnds(points: RopePoint[], anchor: Point, player: Point): void {
   const last = points.length - 1;
   points[0].x = anchor.x;

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { Point } from '../systems/grappleMath';
-import { seedRope, stepRope, type RopePoint, type RopeSimParams } from './ropeSim';
+import { seedRope, stepRope, straightenRope, type RopePoint, type RopeSimParams } from './ropeSim';
 
 /**
  * Cosmetic Verlet rope rendering for the active grapple (DECISIONS.md #017).
@@ -39,12 +39,28 @@ export class RopeVisual {
     this.gfx.clear();
   }
 
-  /** Step the sim with the live endpoints + rope length and redraw. No-op while detached. */
-  update(anchor: Point, player: Point, ropeLength: number, gravityX: number, gravityY: number): void {
+  /**
+   * Step the sim with the live endpoints + rope length and redraw. No-op while
+   * detached. When `goesLimp` is false the rope is a rigid rod with no slack to
+   * show, so it is kept straight instead of sagging (mirrors the physics — see
+   * DECISIONS.md #016/#017).
+   */
+  update(
+    anchor: Point,
+    player: Point,
+    ropeLength: number,
+    gravityX: number,
+    gravityY: number,
+    goesLimp: boolean,
+  ): void {
     if (!this.active) {
       return;
     }
-    stepRope(this.points, anchor, player, ropeLength, gravityX, gravityY, RopeVisual.PARAMS);
+    if (goesLimp) {
+      stepRope(this.points, anchor, player, ropeLength, gravityX, gravityY, RopeVisual.PARAMS);
+    } else {
+      straightenRope(this.points, anchor, player);
+    }
     this.gfx.clear();
     this.gfx.lineStyle(RopeVisual.WIDTH, RopeVisual.COLOR, 1);
     this.gfx.strokePoints(this.points, false, false);

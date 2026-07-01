@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { seedRope, stepRope, type RopeSimParams } from './ropeSim';
+import { seedRope, stepRope, straightenRope, type RopeSimParams } from './ropeSim';
 
 const PARAMS: RopeSimParams = { gravity: 0.5, damping: 0.98, iterations: 20 };
 
@@ -67,5 +67,27 @@ describe('stepRope', () => {
   it('is a no-op for a degenerate chain shorter than two points', () => {
     const points = seedRope(anchor, player, 1);
     expect(() => stepRope(points, anchor, player, 100, 0, 1, PARAMS)).not.toThrow();
+  });
+});
+
+describe('straightenRope', () => {
+  const anchor = { x: 0, y: 0 };
+  const player = { x: 100, y: 0 };
+
+  it('removes all sag, restoring a straight zero-velocity line (rigid rope)', () => {
+    const points = seedRope(anchor, player, 11);
+    // Sag it hard, then straighten (as toggling ropeGoesLimp off does each frame).
+    for (let i = 0; i < 60; i++) {
+      stepRope(points, anchor, player, 200, 0, 1, PARAMS);
+    }
+    expect(Math.max(...points.map((p) => Math.abs(p.y)))).toBeGreaterThan(20);
+
+    straightenRope(points, anchor, player);
+    expect(Math.max(...points.map((p) => Math.abs(p.y)))).toBeCloseTo(0, 5);
+    expect(points[5].x).toBeCloseTo(50, 5);
+    for (const p of points) {
+      expect(p.prevX).toBe(p.x); // zero velocity, so a later limp toggle eases out cleanly
+      expect(p.prevY).toBe(p.y);
+    }
   });
 });
